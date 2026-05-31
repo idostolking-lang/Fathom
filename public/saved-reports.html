@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saved Reports - Fathom</title>
+    <link rel="stylesheet" href="css/fathom.css">
+    <style>
+        /* Page-local: on-theme styling for the JS-generated report cards.
+           Layout and chrome come from fathom.css; these rules only dress the
+           card internals the script builds (titles, dates, instructions, actions). */
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 18px;
+        }
+
+        .report-card { cursor: pointer; }
+
+        .report-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .report-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-hi);
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .report-card-date {
+            font-family: var(--mono);
+            font-size: 11.5px;
+            color: var(--text-low);
+        }
+
+        .report-card-count {
+            flex: none;
+            display: inline-flex;
+            align-items: center;
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--signal);
+            background: var(--signal-soft);
+            border: 1px solid var(--signal-line);
+            border-radius: 20px;
+            padding: 3px 10px;
+            white-space: nowrap;
+        }
+
+        .report-card-instructions {
+            font-size: 12.5px;
+            color: var(--text-mid);
+            margin-bottom: 18px;
+            line-height: 1.6;
+            max-height: 62px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .report-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .report-card-actions .btn,
+        .report-card-actions .btn-primary {
+            flex: 1;
+        }
+
+        .report-modal-body {
+            white-space: pre-wrap;
+            line-height: 1.75;
+            color: var(--text-mid);
+            font-family: var(--mono);
+            font-size: 13px;
+        }
+
+        .report-modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid var(--hairline);
+        }
+
+        .report-modal-actions .btn,
+        .report-modal-actions .btn-primary {
+            flex: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 72px 32px;
+        }
+
+        .empty-state svg { margin: 0 auto 22px; display: block; }
+
+        .empty-state h2 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .empty-state p {
+            color: var(--text-mid);
+            margin-bottom: 26px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="head">
+            <div>
+                <div class="crumb">
+                    <span>Fathom</span>
+                    <span class="sep">/</span>
+                    <span>AI Reports</span>
+                </div>
+                <h1>Saved Reports</h1>
+                <p>View and manage your website analysis reports.</p>
+            </div>
+            <a href="index.html" class="btn ghost">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z"/>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="reports-grid" id="reportsGrid"></div>
+
+        <div class="panel empty-state" id="noReports" style="display: none;">
+            <svg width="72" height="72" viewBox="0 0 80 80" fill="none">
+                <circle cx="40" cy="40" r="38" stroke="var(--hairline-2)" stroke-width="3"/>
+                <path d="M30 40h20M40 30v20" stroke="var(--signal)" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <h2>No Saved Reports Yet</h2>
+            <p>Use Specific Search to analyze websites and save reports.</p>
+            <a href="index.html" class="btn-primary">Go to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal-overlay" id="reportModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 id="reportModalTitle">Report Details</h2>
+                <button class="modal-close" onclick="closeReportModal()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="report-modal-body" id="reportModalBody"></div>
+                <div class="report-modal-actions">
+                    <button class="btn-primary" onclick="copyReport()">
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                        </svg>
+                        Copy Report
+                    </button>
+                    <button class="btn ghost" onclick="closeReportModal()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentReportContent = '';
+
+        // Load saved reports
+        const savedReports = JSON.parse(localStorage.getItem('savedReports') || '[]');
+
+        if (savedReports.length === 0) {
+            document.getElementById('noReports').style.display = 'block';
+        } else {
+            displayReports();
+        }
+
+        function displayReports() {
+            const reportsGrid = document.getElementById('reportsGrid');
+            reportsGrid.innerHTML = '';
+
+            // Sort by date (newest first)
+            savedReports.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            savedReports.forEach(report => {
+                const card = document.createElement('div');
+                card.className = 'panel report-card';
+
+                const date = new Date(report.date);
+                const formattedDate = date.toLocaleString();
+                const explicitBusinessCount = Number(report.businessCount);
+                const businessCount = report.businessCount !== undefined && report.businessCount !== null && Number.isFinite(explicitBusinessCount)
+                    ? explicitBusinessCount
+                    : Array.isArray(report.businesses)
+                        ? report.businesses.length
+                        : 0;
+                const businessLabel = businessCount === 1 ? 'business' : 'businesses';
+
+                card.innerHTML = `
+                    <div class="report-card-header">
+                        <div>
+                            <div class="report-card-title">${report.name}</div>
+                            <div class="report-card-date">${formattedDate}</div>
+                        </div>
+                        <div class="report-card-count">${businessCount} ${businessLabel}</div>
+                    </div>
+                    <div class="report-card-instructions">
+                        ${report.instructions}
+                    </div>
+                    <div class="report-card-actions">
+                        <button class="btn-primary" onclick="viewReport(${report.id})">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                            </svg>
+                            View
+                        </button>
+                        <button class="btn ghost" onclick="deleteReport(${report.id}, event)">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                `;
+
+                reportsGrid.appendChild(card);
+            });
+        }
+
+        function viewReport(reportId) {
+            const report = savedReports.find(r => r.id === reportId);
+            if (!report) return;
+
+            // Show modal with report content
+            document.getElementById('reportModalTitle').textContent = report.name;
+            document.getElementById('reportModalBody').textContent = report.report;
+            document.getElementById('reportModal').classList.add('active');
+            currentReportContent = report.report;
+        }
+
+        function closeReportModal() {
+            document.getElementById('reportModal').classList.remove('active');
+            currentReportContent = '';
+        }
+
+        function copyReport() {
+            if (!currentReportContent) return;
+
+            navigator.clipboard.writeText(currentReportContent).then(() => {
+                alert('Report copied to clipboard.');
+            }).catch(err => {
+                alert('Failed to copy: ' + err);
+            });
+        }
+
+        function deleteReport(reportId, event) {
+            event.stopPropagation();
+
+            const report = savedReports.find(r => r.id === reportId);
+            if (!report) return;
+
+            if (confirm(`Are you sure you want to delete "${report.name}"?\n\nThis action cannot be undone.`)) {
+                // Remove from array
+                const index = savedReports.findIndex(r => r.id === reportId);
+                if (index > -1) {
+                    savedReports.splice(index, 1);
+                    localStorage.setItem('savedReports', JSON.stringify(savedReports));
+
+                    // Refresh display
+                    if (savedReports.length === 0) {
+                        document.getElementById('reportsGrid').innerHTML = '';
+                        document.getElementById('noReports').style.display = 'block';
+                    } else {
+                        displayReports();
+                    }
+                }
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('reportModal').addEventListener('click', (e) => {
+            if (e.target.id === 'reportModal') {
+                closeReportModal();
+            }
+        });
+    </script>
+</body>
+</html>

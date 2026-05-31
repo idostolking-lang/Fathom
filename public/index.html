@@ -1,0 +1,2579 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fathom — lead intelligence console</title>
+    <link rel="stylesheet" href="css/fathom.css">
+    <link rel="stylesheet" href="backgroundTasks.css">
+</head>
+<body>
+    <!-- Background Tasks Toggle Button -->
+    <div class="bg-tasks-toggle" onclick="backgroundTasksUI.show()" title="Background Tasks">
+        <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+        </svg>
+        <span class="bg-tasks-toggle-badge" style="display: none;">0</span>
+    </div>
+    <div class="console">
+        <header class="bar">
+            <div class="brand">
+                <svg class="mark" viewBox="0 0 32 32" fill="none">
+                    <circle cx="16" cy="16" r="2.4" fill="currentColor"/>
+                    <path d="M16 16 L26 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <path d="M9.5 22.5a9 9 0 0 1 13-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>
+                    <path d="M6.5 25.5a13.5 13.5 0 0 1 19-19" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".45"/>
+                </svg>
+                <span class="wordmark">Fat<b>h</b>om</span>
+            </div>
+            <div class="readouts">
+                <div class="readout"><span class="k">System</span><span class="v"><span class="dot live"></span><span id="systemStatus">Online</span></span></div>
+                <div class="readout" id="whatsappStatus" style="cursor:pointer" title="Click to connect WhatsApp"><span class="k">WhatsApp</span><span class="v" id="whatsappStatusText">Loading</span></div>
+                <div class="readout"><span class="k">Active runs</span><span class="v"><span class="num" id="activeRunsCount">0</span></span></div>
+                <div class="readout"><span class="k">Local time</span><span class="v" id="currentTime">--:--:--</span></div>
+            </div>
+        </header>
+        <nav class="rail">
+            <div class="grp">Console</div>
+            <div class="nav active" data-screen="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl">Home</span><span class="dotmark"></span></div>
+            <div class="nav" data-screen="routines"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="12" r="2.5"/><path d="M8.5 6H14a2 2 0 0 1 2 2v2M8.5 18H14a2 2 0 0 0 2-2v-2" stroke-linecap="round"/></svg><span class="lbl">Routines</span></div>
+            <div class="nav" data-screen="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="M8 12h8M8 16h5" stroke-linecap="round"/></svg><span class="lbl">Docs</span></div>
+            <div class="nav" data-screen="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v2.5M12 18.5V21M4.5 7.5l1.8 1M17.7 15.5l1.8 1M4.5 16.5l1.8-1M17.7 8.5l1.8-1M3 12h2.5M18.5 12H21" stroke-linecap="round"/></svg><span class="lbl">Settings</span></div>
+            <div class="grp">Collect</div>
+            <div class="nav" data-launch="startScrapeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg><span class="lbl">Discover</span></div>
+            <div class="nav" data-launch="emailExtractorBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6l8 5 8-5"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg><span class="lbl">Enrich</span></div>
+            <div class="grp">Act</div>
+            <div class="nav" data-launch="leadSenderBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4l16 8-16 8 4-8-4-8Z" stroke-linejoin="round"/></svg><span class="lbl">Outreach</span></div>
+            <div class="nav" id="smsNav" onclick="if(window.SmsSender)SmsSender.open()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/><path d="M8 9h8M8 13h5" stroke-linecap="round"/></svg><span class="lbl">SMS</span></div>
+            <div class="nav" data-launch="consultantBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg><span class="lbl">Consultant</span></div>
+            <div class="spacer"></div>
+            <div class="nav" onclick="if(window.backgroundTasksUI)backgroundTasksUI.show()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 12h4l2 6 4-12 2 6h6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="lbl">Operations</span></div>
+            <div class="foot">v2.0 · <b>fathom</b></div>
+        </nav>
+
+        <main class="stage">
+            <section id="screen-home" class="screen show">
+            <div class="welcome-card">
+                <h2>Lead intelligence console</h2>
+                <p>Discover a market, enrich and study the signals, then act. Compose Routines to run the whole pipeline on demand or on a schedule.</p>
+                
+                <!-- Category 1: Data Collection -->
+                <div class="button-category">
+                    <h3 class="category-title">
+                        <span class="category-icon">🔍</span>
+                        Data Collection
+                    </h3>
+                    <div class="category-buttons">
+                        <div class="button-with-tooltip">
+                            <button class="btn-primary" id="startScrapeBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"/>
+                                </svg>
+                                Start Data Scrape
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Scrape Google Maps</strong>
+                                <p>Extract business data: name, phone, address, website from Google Maps searches</p>
+                            </div>
+                        </div>
+                        
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="emailExtractorBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                                </svg>
+                                Extract Emails
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Email Extractor</strong>
+                                <p>Automatically find and extract email addresses from business websites</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 2: My Data -->
+                <div class="button-category">
+                    <h3 class="category-title">
+                        <span class="category-icon">💾</span>
+                        My Data
+                    </h3>
+                    <div class="category-buttons">
+                        <div class="button-with-tooltip">
+                            <button class="btn-secondary" id="savedTablesBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM13 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2z"/>
+                                </svg>
+                                Saved Tables
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Saved Tables</strong>
+                                <p>View and manage all your saved business data tables</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-secondary" id="savedReportsBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"/>
+                                    <path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+                                </svg>
+                                Saved Reports
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Saved Reports</strong>
+                                <p>Access your saved AI-generated business analysis reports</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-secondary" id="savedChatsBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/>
+                                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"/>
+                                </svg>
+                                Saved Chats
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Saved Consultant Chats</strong>
+                                <p>View and manage all your saved AI consultant conversations</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-secondary" id="pastAnalysesBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                                    <path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/>
+                                </svg>
+                                View Past Chats
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Past Chat Analyses</strong>
+                                <p>Review your previously analyzed WhatsApp/message conversations</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="clipboardManagerBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                                    <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                                </svg>
+                                My Clipboard
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Clipboard Manager</strong>
+                                <p>Quick access to your saved notes and copied text</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="compareTablesBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"/>
+                                    <path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+                                </svg>
+                                Compare Tables
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Compare Tables</strong>
+                                <p>Compare multiple tables to find duplicates or unique entries</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 3: Lead Generation -->
+                <div class="button-category">
+                    <h3 class="category-title">
+                        <span class="category-icon">🎯</span>
+                        Lead Generation
+                    </h3>
+                    <div class="category-buttons">
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="specificSearchBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/>
+                                </svg>
+                                Specific Search
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>AI Website Analysis</strong>
+                                <p>Analyze business websites with AI based on your custom search criteria</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="leadBasedReportBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                    <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                                </svg>
+                                Lead Based on Report
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Report-Based Leads</strong>
+                                <p>Generate personalized marketing messages based on AI analysis reports</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 4: Communication Tools -->
+                <div class="button-category">
+                    <h3 class="category-title">
+                        <span class="category-icon">💬</span>
+                        Communication Tools
+                    </h3>
+                    <div class="category-buttons">
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="leadSenderBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                                </svg>
+                                Lead Sender (WhatsApp)
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>WhatsApp Bulk Sender</strong>
+                                <p>Send automated WhatsApp messages to your leads with AI-generated content</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="emailLeadSenderBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                                </svg>
+                                Lead Sender (Email)
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Email Bulk Sender</strong>
+                                <p>Send professional email campaigns to your business leads</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="analyzeMessagesBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                                    <path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/>
+                                </svg>
+                                Analyze Messages
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>AI Chat Analyzer</strong>
+                                <p>Analyze WhatsApp chats & messages with AI - get insights, summaries & suggestions</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="consultantBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Consultant
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>AI Consultant Chat</strong>
+                                <p>Chat with AI using custom models & behaviors - like having your own personal consultant</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" onclick="if(window.SmsSender)SmsSender.open()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/>
+                                    <path d="M8 9h8M8 13h5" stroke-linecap="round"/>
+                                </svg>
+                                SMS Sender
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Bulk SMS Sender</strong>
+                                <p>Text a saved table through your SMS gateway, with placeholders and throttling</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" onclick="if(window.openWhatsappAdmin)openWhatsappAdmin()">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5Z" stroke-linejoin="round"/>
+                                    <path d="M9 10.5c0 2.5 2 4.5 4.5 4.5" stroke-linecap="round"/>
+                                </svg>
+                                WhatsApp Remote
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>WhatsApp Remote Control</strong>
+                                <p>Set the number that can run routines by text, and turn on run notifications</p>
+                            </div>
+                        </div>
+
+                        <div class="button-with-tooltip">
+                            <button class="btn-outline" id="instagramAutomationBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                                </svg>
+                                Instagram Automation
+                            </button>
+                            <div class="button-tooltip">
+                                <strong>Instagram DM Automation</strong>
+                                <p>Search Instagram users and send automated DMs - by hashtags or usernames</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Scrapes -->
+            <div class="recent-scrapes" id="recentScrapesContainer" style="display: none;">
+                <h3>Recent Scrapes</h3>
+                <div class="scrapes-list" id="scrapesList"></div>
+            </div>
+            </section>
+            <section id="screen-routines" class="screen">
+                <div id="routinesRoot"></div>
+            </section>
+            <section id="screen-docs" class="screen">
+                <div id="docsRoot"></div>
+            </section>
+            <section id="screen-settings" class="screen">
+                <div id="settingsRoot"></div>
+            </section>
+        </main>
+        <aside class="dock">
+            <div class="dock-h"><span class="t">Operations</span><span class="ct" id="dockCount">0</span></div>
+            <div class="dock-body" id="dockBody"><div class="rt-empty">No active jobs</div></div>
+            <div class="dock-foot"><span>fathom</span><span id="dockQueue">idle</span></div>
+        </aside>
+    </div>
+
+    <!-- Modal for Scraping Steps -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Data Scraping Wizard</h2>
+                <button class="modal-close" id="modalClose">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="steps-indicator">
+                <div class="step active" data-step="1">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Enter URL</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="3">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Extract Data</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step" data-step="4">
+                    <div class="step-number">3</div>
+                    <div class="step-label">View Results</div>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <!-- Step 1: Enter URL -->
+                <div class="step-content active" id="step1">
+                    <h3>Enter Google Maps URL</h3>
+                    <p>Paste a Google Maps search results URL (or single business) and we'll extract: Name, Address, Phone, and Website for all businesses.</p>
+                    <div class="form-group">
+                        <label for="websiteUrl">Google Maps URL</label>
+                        <input 
+                            type="url" 
+                            id="websiteUrl" 
+                            placeholder="https://www.google.com/maps/search/..."
+                            class="form-input"
+                        />
+                        <small style="font-size: 13px; margin-top: 8px; display: block;">
+                            💡 Tip: Search for businesses on Google Maps, then copy the URL from your browser
+                        </small>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 24px;">
+                        <label for="durationSelect">⏱️ Work Duration</label>
+                        <select id="durationSelect" class="form-input" style="cursor: pointer;">
+                            <option value="5">5 minutes (Quick - ~15-20 businesses)</option>
+                            <option value="10">10 minutes (Medium - ~30-40 businesses)</option>
+                            <option value="15" selected>15 minutes (Extended - ~50-60 businesses)</option>
+                            <option value="20">20 minutes (Maximum - ~70+ businesses)</option>
+                        </select>
+                        <small style="font-size: 13px; margin-top: 8px; display: block;">
+                            ⚡ The system will collect businesses for the selected duration
+                        </small>
+                    </div>
+                    
+                    <div class="step-actions" style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn-primary" id="analyzeBtn">
+                            <span class="btn-text">Start Extraction</span>
+                            <span class="btn-loader" style="display: none;"></span>
+                        </button>
+                        <button class="btn-run-background" onclick="analyzeWebsite(true)">
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                            </svg>
+                            Run in Background
+                        </button>
+                    </div>
+                </div>
+
+
+                <!-- Step 3: Scraping Progress -->
+                <div class="step-content" id="step3">
+                    <div class="scraping-progress">
+                        <div class="loader"></div>
+                        <h3>Extracting Data...</h3>
+                        <p id="progressMessage">Loading Google Maps and finding all businesses...</p>
+                        <p id="progressDetails" style="margin-top: 12px; font-size: 14px; font-weight: 600;"></p>
+                        <small style="font-size: 13px; margin-top: 16px; display: block;">
+                            This may take a few minutes depending on the number of businesses
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Step 4: Results -->
+                <div class="step-content" id="step4">
+                    <div class="success-message">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="margin-bottom: 24px; color: var(--live);">
+                            <circle cx="40" cy="40" r="36" fill="currentColor" opacity="0.15"/>
+                            <circle cx="40" cy="40" r="32" stroke="currentColor" stroke-width="4" opacity="0.3"/>
+                            <path d="M28 40L36 48L52 30" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <h3>🎉 Scraping Complete!</h3>
+                        <p id="resultMessage">Successfully scraped data from the website.</p>
+                        <div style="display: flex; gap: 12px; justify-content: center; margin-top: 24px;">
+                            <button class="btn-primary" id="viewResultsBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                                </svg>
+                                View Results
+                            </button>
+                            <button class="btn-secondary" id="newScrapeBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                                </svg>
+                                New Scrape
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lead Sender Modal -->
+    <div class="modal-overlay" id="leadSenderModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>📧 Lead Sender - Select Table</h2>
+                <button class="modal-close" id="leadSenderClose">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Step 1: Select Saved Table -->
+                <div class="lead-step active" id="leadStep1">
+                    <h3>Select a Saved Table</h3>
+                    <p>Choose which table you want to process for lead generation</p>
+                    
+                    <div class="saved-tables-list" id="leadTablesList">
+                        <!-- Tables will be inserted here -->
+                    </div>
+                    
+                    <div id="noTablesMessage" style="display: none; text-align: center; padding: 40px;">
+                        <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style="margin: 0 auto 16px;">
+                            <circle cx="30" cy="30" r="28" stroke="var(--gray-border)" stroke-width="2"/>
+                            <path d="M30 20v16M30 42v2" stroke="var(--gray)" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                        <h4 style="color: var(--gray); margin-bottom: 8px;">No Saved Tables</h4>
+                        <p style="color: var(--gray); font-size: 14px;">Please scrape some data first</p>
+                    </div>
+                </div>
+
+                <!-- Step 1b: Extraction Options -->
+                <div class="lead-step" id="leadStep1b">
+                    <h3>🎯 Choose Extraction Method</h3>
+                    <p>Select which businesses you want to extract from the table</p>
+
+                    <div class="whatsapp-options" style="margin-top: 32px;">
+                        <!-- Option 1: Businesses Without Websites -->
+                        <div class="option-card" onclick="extractBusinessesWithOption('no-website')" style="cursor: pointer; transition: transform 0.2s;">
+                            <div class="option-header">
+                                <div class="option-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4>🔍 Only Businesses Without Websites</h4>
+                                    <p>Extract businesses that don't have a website (ideal for offering website services)</p>
+                                    <p style="font-size: 20px; font-weight: 700; color: var(--primary); margin-top: 12px;">
+                                        <span id="noWebsiteCount">0</span> businesses
+                                    </p>
+                                </div>
+                            </div>
+                            <button class="btn-outline" style="width: 100%; margin-top: 16px;" onclick="event.stopPropagation(); extractBusinessesWithOption('no-website');">
+                                Extract Without Websites
+                            </button>
+                        </div>
+
+                        <!-- Option 2: All Businesses -->
+                        <div class="option-card" onclick="extractBusinessesWithOption('all')" style="cursor: pointer; transition: transform 0.2s;">
+                            <div class="option-header">
+                                <div class="option-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4>📊 All Businesses</h4>
+                                    <p>Extract all businesses from the table (send messages to everyone)</p>
+                                    <p style="font-size: 20px; font-weight: 700; color: var(--primary); margin-top: 12px;">
+                                        <span id="allBusinessesCount">0</span> businesses
+                                    </p>
+                                </div>
+                            </div>
+                            <button class="btn-outline" style="width: 100%; margin-top: 16px;" onclick="event.stopPropagation(); extractBusinessesWithOption('all');">
+                                Extract All
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; text-align: center;">
+                        <button class="btn-secondary" onclick="showLeadStep(1)">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Back to Tables
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Processing & Results -->
+                <div class="lead-step" id="leadStep2">
+                    <div class="processing-section" id="processingSection">
+                        <div class="loader"></div>
+                        <h3>Processing Businesses...</h3>
+                        <p id="processingMessage">Filtering businesses without websites...</p>
+                    </div>
+
+                    <div class="results-section" id="leadResultsSection" style="display: none;">
+                        <div style="text-align: center; margin-bottom: 32px;">
+                            <svg width="70" height="70" viewBox="0 0 70 70" fill="none" style="margin: 0 auto 16px; color: var(--live);">
+                                <circle cx="35" cy="35" r="32" fill="currentColor" opacity="0.15"/>
+                                <path d="M25 35L31 41L45 25" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <h3>✨ Leads Generated!</h3>
+                            <p id="leadsCount" style="font-size: 18px; color: var(--primary); font-weight: 700; margin-top: 12px;"></p>
+                        </div>
+
+                        <div class="table-wrapper">
+                            <table class="results-table" id="leadsTable"></table>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap;">
+                            <button class="btn-primary" id="nextToWhatsAppBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                </svg>
+                                Next - WhatsApp
+                            </button>
+                            <button class="btn-secondary" id="saveLeadsBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/>
+                                </svg>
+                                Save Table
+                            </button>
+                            <button class="btn-secondary" id="exportLeadsCsvBtn">Export CSV</button>
+                            <button class="btn-secondary" id="closeLeadsBtn">Close</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: WhatsApp Options -->
+                <div class="lead-step" id="leadStep3">
+                    <h3>📱 WhatsApp Messaging Options</h3>
+                    <p>Choose how you want to contact your leads</p>
+
+                    <div class="whatsapp-options">
+                        <!-- Option 1: General Message -->
+                        <div class="option-card" id="option1Card">
+                            <div class="option-header">
+                                <div class="option-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4>Option 1: General Message</h4>
+                                    <p>Send the same message to all businesses</p>
+                                </div>
+                            </div>
+                            <button class="btn-outline" id="selectOption1" style="width: 100%; margin-top: 16px;">
+                                Select Option 1
+                            </button>
+                        </div>
+
+                        <!-- Option 2: Custom Messages -->
+                        <div class="option-card" id="option2Card">
+                            <div class="option-header">
+                                <div class="option-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                                        <path d="M7 9h10v2H7zm0-3h10v2H7zm0 6h7v2H7z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h4>Option 2: Custom Messages</h4>
+                                    <p>Select specific businesses and write custom messages</p>
+                                </div>
+                            </div>
+                            <button class="btn-outline" id="selectOption2" style="width: 100%; margin-top: 16px;">
+                                Select Option 2
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 24px; text-align: center;">
+                        <button class="btn-secondary" id="backToLeadsBtn">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Back to Results
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: General Message -->
+                <div class="lead-step" id="leadStep4General">
+                    <h3>📝 General Message for All Leads</h3>
+                    <p>This message will be sent to all <span id="generalLeadsCount" style="color: var(--primary); font-weight: 700;"></span> businesses</p>
+
+                    <div class="form-group" style="margin-top: 24px;">
+                        <label for="generalMessage">Message Template</label>
+                        <textarea 
+                            id="generalMessage" 
+                            class="form-input" 
+                            rows="6" 
+                            style="resize: vertical; font-family: inherit;"
+                            placeholder="Hi! I noticed your business doesn't have a website. I'd love to help you create one..."></textarea>
+                        <small style="color: var(--gray); font-size: 13px; display: block; margin-top: 8px;">
+                            💡 Tip: Keep it professional and friendly. The message will be sent via WhatsApp.
+                        </small>
+                    </div>
+
+                    <div class="message-preview" style="margin-top: 24px; padding: 20px; background: var(--gray-light); border-radius: 12px;">
+                        <strong style="display: block; margin-bottom: 8px; color: var(--dark);">Preview:</strong>
+                        <div id="generalMessagePreview" style="color: var(--gray); font-style: italic;">
+                            Type a message to see preview...
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap;">
+                        <button class="btn-primary" id="sendGeneralMessagesBtn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
+                            Send to All
+                        </button>
+                        <button class="btn-secondary" id="backToOptions1">Back to Options</button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Custom Messages -->
+                <div class="lead-step" id="leadStep5Custom">
+                    <h3>✉️ Custom Messages</h3>
+                    <p>Select businesses and write custom messages for each</p>
+
+                    <div class="custom-message-container">
+                        <div class="businesses-selection" id="businessesSelection">
+                            <!-- Checkboxes will be inserted here -->
+                        </div>
+
+                        <div class="form-group" style="margin-top: 24px;">
+                            <label for="customMessage">Message for Selected Businesses</label>
+                            <textarea 
+                                id="customMessage" 
+                                class="form-input" 
+                                rows="6" 
+                                style="resize: vertical; font-family: inherit;"
+                                placeholder="Write your custom message here..."></textarea>
+                            <div style="margin-top: 12px; color: var(--gray); font-size: 14px;">
+                                <strong id="selectedCount">0</strong> businesses selected
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap;">
+                        <button class="btn-primary" id="sendCustomMessagesBtn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
+                            Send to Selected
+                        </button>
+                        <button class="btn-secondary" id="backToOptions2">Back to Options</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp QR Code Modal -->
+    <div class="modal-overlay" id="whatsappQRModal">
+        <div class="modal-container" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>📱 Connect WhatsApp</h2>
+                <button class="modal-close" id="whatsappQRClose">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <div id="whatsappQRSection">
+                    <p style="color: var(--gray); margin-bottom: 20px;">Scan this QR code with your WhatsApp mobile app</p>
+                    <div id="qrCodeContainer" style="display: flex; justify-content: center; margin: 20px 0;">
+                        <div class="loader"></div>
+                    </div>
+                    <div style="background: var(--gray-light); padding: 16px; border-radius: 12px; margin-top: 20px;">
+                        <strong style="display: block; margin-bottom: 8px;">How to scan:</strong>
+                        <ol style="text-align: left; color: var(--gray); font-size: 14px; line-height: 1.8; padding-left: 20px;">
+                            <li>Open WhatsApp on your phone</li>
+                            <li>Tap Menu (⋮) or Settings</li>
+                            <li>Tap "Linked Devices"</li>
+                            <li>Tap "Link a Device"</li>
+                            <li>Scan this QR code</li>
+                        </ol>
+                    </div>
+                </div>
+                <div id="whatsappConnectedSection" style="display: none;">
+                    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="margin: 20px auto; color: var(--live);">
+                        <circle cx="40" cy="40" r="36" fill="currentColor" opacity="0.15"/>
+                        <path d="M28 40L36 48L52 30" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3 style="color: var(--dark); margin-bottom: 12px;">✅ WhatsApp Connected!</h3>
+                    <p style="color: var(--gray); margin-bottom: 24px;">You can now send messages automatically</p>
+                    
+                    <div style="padding: 16px; border-radius: 12px; margin-bottom: 20px; text-align: left;">
+                        <div style="display: flex; align-items: start; gap: 12px;">
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink: 0; margin-top: 2px;">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            <div style="flex: 1;">
+                                <strong style="font-size: 14px;">Want to connect a different phone?</strong>
+                                <p style="color: var(--gray); font-size: 13px; margin: 4px 0 0 0; line-height: 1.5;">
+                                    Click "Disconnect" to log out and scan a new QR code with a different device.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button class="btn-secondary" id="disconnectWhatsAppBtn">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
+                            </svg>
+                            Disconnect WhatsApp
+                        </button>
+                        <button class="btn-primary" onclick="document.getElementById('whatsappQRModal').classList.remove('active')">
+                            Close
+                        </button>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Specific Search Modal -->
+        <div class="modal-overlay" id="specificSearchModal">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2>🔍 Specific Search - <span id="specificSearchTitle">Select Table</span></h2>
+                    <button class="modal-close" id="specificSearchClose">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Step 1: Select Table -->
+                    <div class="search-step active" id="searchStep1">
+                        <h3>Select a Saved Table</h3>
+                        <p>Choose which table you want to analyze</p>
+                        
+                        <div class="saved-tables-list" id="searchTablesList">
+                            <!-- Tables will be inserted here -->
+                        </div>
+                        
+                        <div id="noSearchTablesMessage" style="display: none; text-align: center; padding: 40px;">
+                            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style="margin: 0 auto 16px;">
+                                <circle cx="30" cy="30" r="28" stroke="var(--gray-border)" stroke-width="2"/>
+                                <path d="M30 20v16M30 42v2" stroke="var(--gray)" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                            <h4 style="color: var(--gray); margin-bottom: 8px;">No Saved Tables</h4>
+                            <p style="color: var(--gray); font-size: 14px;">Please scrape some data first</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Businesses with Websites -->
+                    <div class="search-step" id="searchStep2">
+                        <div class="processing-section" id="searchProcessingSection">
+                            <div class="loader"></div>
+                            <h3>Processing Businesses...</h3>
+                            <p>Filtering businesses with websites...</p>
+                        </div>
+
+                        <div class="results-section" id="searchBusinessesSection" style="display: none;">
+                            <div style="text-align: center; margin-bottom: 24px;">
+                                <h3>✨ Businesses with Websites Found!</h3>
+                                <p id="websitesCount" style="font-size: 18px; color: var(--primary); font-weight: 700; margin-top: 12px;"></p>
+                            </div>
+
+                            <div class="table-wrapper">
+                                <table class="results-table" id="websitesTable"></table>
+                            </div>
+
+                            <div style="display: flex; gap: 12px; justify-content: center; margin-top: 24px;">
+                                <button class="btn-primary" id="nextToInstructionsBtn">
+                                    Next - Write Instructions
+                                </button>
+                                <button class="btn-secondary" id="closeSearchStep2">Close</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Write Instructions -->
+                    <div class="search-step" id="searchStep3">
+                        <h3>📝 Write Detailed Search Instructions</h3>
+                        <p>Describe what you want to search for in the business websites</p>
+
+                        <div class="form-group" style="margin-top: 24px;">
+                            <label for="searchInstructions">Search Instructions</label>
+                            <textarea 
+                                id="searchInstructions" 
+                                class="form-input" 
+                                rows="8" 
+                                style="resize: vertical; font-family: inherit;"
+                                placeholder="Example: Check if they offer delivery services, find their operating hours, look for customer reviews or testimonials..."></textarea>
+                            <small style="color: var(--gray); font-size: 13px; display: block; margin-top: 8px;">
+                                💡 Tip: Be specific and detailed. The AI will search for this information on each website.
+                            </small>
+                        </div>
+
+                        <!-- Custom Mode Toggle for Specific Search -->
+                        <div style="border-radius: 12px; padding: 16px; margin-top: 20px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1;">
+                                    <input type="checkbox" id="searchCustomModeToggle" style="width: 20px; height: 20px; cursor: pointer;">
+                                    <div>
+                                        <strong style="font-size: 15px;">🔓 Custom Mode (Override AI Guidelines)</strong>
+                                        <p style="color: var(--gray); font-size: 13px; margin: 4px 0 0 0; line-height: 1.5;">
+                                            Enable this to have <strong>full control</strong> over the AI's behavior. Your instructions will be the ONLY instructions - no AI guidelines or restrictions will apply.
+                                        </p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="searchCustomModeWarning" style="display: none; padding: 12px; border-radius: 8px; margin-top: 12px;">
+                                <div style="display: flex; align-items: start; gap: 8px;">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink: 0; margin-top: 2px;">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div style="flex: 1; font-size: 13px;">
+                                        <strong>Custom Mode Active:</strong> The AI will follow ONLY your instructions. Be very specific about what you want!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; justify-content: center; margin-top: 32px;">
+                            <button class="btn-primary" id="nextToSearchTypeBtn">
+                                Next - Choose Search Type
+                            </button>
+                            <button class="btn-secondary" id="backToWebsitesBtn">Back</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Choose Search Type -->
+                    <div class="search-step" id="searchStep4">
+                        <h3>🎯 Choose Search Type</h3>
+                        <p>How do you want to conduct the search?</p>
+
+                        <div class="whatsapp-options">
+                            <!-- Option 1: Search All -->
+                            <div class="option-card" id="searchAllCard">
+                                <div class="option-header">
+                                    <div class="option-icon">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4>Search All Websites</h4>
+                                        <p>Analyze all business websites automatically</p>
+                                    </div>
+                                </div>
+                                <button class="btn-outline" id="selectSearchAll" style="width: 100%; margin-top: 16px;">
+                                    Search All
+                                </button>
+                            </div>
+
+                            <!-- Option 2: Custom Search -->
+                            <div class="option-card" id="searchCustomCard">
+                                <div class="option-header">
+                                    <div class="option-icon">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4>Custom Search</h4>
+                                        <p>Select specific businesses to analyze</p>
+                                    </div>
+                                </div>
+                                <button class="btn-outline" id="selectSearchCustom" style="width: 100%; margin-top: 16px;">
+                                    Custom Search
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 24px; text-align: center;">
+                            <button class="btn-secondary" id="backToInstructionsBtn">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                                </svg>
+                                Back to Instructions
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 5: Custom Selection -->
+                    <div class="search-step" id="searchStep5Custom">
+                        <h3>🎯 Select Businesses to Search</h3>
+                        <p>Choose which businesses you want to analyze</p>
+
+                        <div class="businesses-selection" id="customSearchBusinesses">
+                            <!-- Checkboxes will be inserted here -->
+                        </div>
+
+                        <div style="display: flex; gap: 12px; justify-content: center; margin-top: 32px;">
+                            <button class="btn-primary" id="startCustomSearchBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                Start Search
+                            </button>
+                            <button class="btn-secondary" id="backToSearchTypeBtn">Back</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 6: Searching & Results -->
+                    <div class="search-step" id="searchStep6Results">
+                        <div class="processing-section" id="searchingSection">
+                            <div class="loader"></div>
+                            <h3>🔍 Analyzing Websites...</h3>
+                            <p id="searchProgressMessage">This may take a few minutes...</p>
+                            <div style="margin-top: 20px;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" id="searchProgressBar"></div>
+                                </div>
+                                <p id="searchProgressText" style="text-align: center; margin-top: 10px; color: var(--gray); font-size: 14px;">0 / 0 completed</p>
+                            </div>
+                        </div>
+
+                        <div class="results-section" id="finalSearchResults" style="display: none;">
+                            <div style="text-align: center; margin-bottom: 32px;">
+                                <svg width="70" height="70" viewBox="0 0 70 70" fill="none" style="margin: 0 auto 16px; color: var(--signal);">
+                                    <circle cx="35" cy="35" r="32" fill="currentColor" opacity="0.15"/>
+                                    <path d="M25 35L31 41L45 25" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <h3>✨ Search Complete!</h3>
+                                <p style="font-size: 16px; color: var(--gray); margin-top: 12px;">Analysis report is ready</p>
+                            </div>
+
+                            <div id="searchReportContainer" style="background: var(--gray-light); padding: 24px; border-radius: 16px; margin-bottom: 24px;">
+                                <!-- Report will be inserted here -->
+                            </div>
+
+                            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                                <button class="btn-secondary" id="saveSearchReportBtn">Save Report</button>
+                                <button class="btn-secondary" id="closeSearchResultsBtn">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lead Based on Report Modal -->
+        <div class="modal-overlay" id="leadReportModal">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2>📝 Lead Based on Report</h2>
+                    <button class="modal-close" id="leadReportClose">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Step 1: Select Report -->
+                    <div class="lead-report-step active" id="leadReportStep1">
+                        <h3>Select a Saved Report</h3>
+                        <p>Choose which report you want to generate a marketing message from</p>
+                        
+                        <div class="saved-tables-list" id="savedReportsList">
+                            <!-- Reports will be inserted here -->
+                        </div>
+                        
+                        <div id="noReportsMessage" style="display: none; text-align: center; padding: 40px;">
+                            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style="margin: 0 auto 16px;">
+                                <circle cx="30" cy="30" r="28" stroke="var(--gray-border)" stroke-width="2"/>
+                                <path d="M30 20v16M30 42v2" stroke="var(--gray)" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                            <h4 style="color: var(--gray); margin-bottom: 8px;">No Saved Reports</h4>
+                            <p style="color: var(--gray); font-size: 14px;">Please use Specific Search first to generate reports</p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Write Instructions -->
+                    <div class="lead-report-step" id="leadReportStep2">
+                        <h3>📝 Write Message Instructions</h3>
+                        <p>Tell the AI how to write the marketing message based on the report</p>
+                        
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--dark);">
+                                Message Instructions:
+                            </label>
+                            <textarea 
+                                id="leadMessageInstructions" 
+                                placeholder="Example: Write a professional message in Hebrew offering web design services, mention specific findings from the report, keep it friendly but business-oriented, around 3-4 sentences..."
+                                style="width: 100%; min-height: 180px; padding: 16px; border: 2px solid var(--gray-border); border-radius: 12px; font-size: 15px; font-family: inherit; resize: vertical;"
+                            ></textarea>
+                            <div style="margin-top: 8px; font-size: 13px; color: var(--gray);">
+                                💡 Be specific about tone, length, and what to emphasize from the report
+                            </div>
+                        </div>
+
+                        <!-- Custom Mode Toggle -->
+                        <div style="border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                                <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1;">
+                                    <input type="checkbox" id="customModeToggle" style="width: 20px; height: 20px; cursor: pointer;">
+                                    <div>
+                                        <strong style="font-size: 15px;">🔓 Custom Mode (Override AI Guidelines)</strong>
+                                        <p style="color: var(--gray); font-size: 13px; margin: 4px 0 0 0; line-height: 1.5;">
+                                            Enable this to have <strong>full control</strong> over the AI's behavior. Your instructions will be the ONLY instructions - no AI guidelines or restrictions will apply.
+                                        </p>
+                                    </div>
+                                </label>
+                            </div>
+                            <div id="customModeWarning" style="display: none; padding: 12px; border-radius: 8px; margin-top: 12px;">
+                                <div style="display: flex; align-items: start; gap: 8px;">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink: 0; margin-top: 2px;">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div style="flex: 1; font-size: 13px;">
+                                        <strong>Custom Mode Active:</strong> The AI will follow ONLY your instructions. Be very specific about what you want!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px;">
+                            <button class="btn-secondary" id="backToReportSelectionFromInstructions">Back</button>
+                            <button class="btn-primary" id="generateMarketingMessage">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"/>
+                                </svg>
+                                Generate Message
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Generating & Result -->
+                    <div class="lead-report-step" id="leadReportStep3">
+                        <div class="processing-section" id="leadReportProcessing">
+                            <div class="loader"></div>
+                            <h3>🤖 Analyzing Report with AI...</h3>
+                            <p>Creating professional marketing message in Hebrew...</p>
+                        </div>
+
+                        <div class="results-section" id="leadReportResult" style="display: none;">
+                            <div style="text-align: center; margin-bottom: 32px;">
+                                <svg width="70" height="70" viewBox="0 0 70 70" fill="none" style="margin: 0 auto 16px; color: var(--signal);">
+                                    <circle cx="35" cy="35" r="32" fill="currentColor" opacity="0.15"/>
+                                    <path d="M25 35L31 41L45 25" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <h3>✨ Marketing Message Generated!</h3>
+                                <p style="font-size: 16px; color: var(--gray); margin-top: 12px;">Ready to copy and send</p>
+                            </div>
+
+                            <div style="padding: 16px; border-radius: 12px; margin-bottom: 24px;">
+                                <div style="display: flex; align-items: start; gap: 12px;">
+                                    <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink: 0; margin-top: 2px;">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div style="flex: 1;">
+                                        <strong style="font-size: 14px;">Not satisfied with the result?</strong>
+                                        <p style="color: var(--gray); font-size: 13px; margin: 4px 0 0 0; line-height: 1.5;">
+                                            Click "Try Different Instructions" to regenerate with different parameters!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="background: var(--gray-light); padding: 24px; border-radius: 16px; margin-bottom: 24px; position: relative;">
+                                <h4 style="margin-bottom: 16px; color: var(--dark);">📧 Marketing Message:</h4>
+                                <div id="marketingMessageContent" style="white-space: pre-wrap; line-height: 1.8; color: var(--dark); font-size: 15px; padding: 20px; border-radius: 12px; border: 2px solid var(--gray-border); max-height: 500px; overflow-y: auto;"></div>
+                                <div style="margin-top: 12px; padding: 8px 12px; border-radius: 8px; font-size: 13px; color: var(--gray);">
+                                    💡 Tip: Scroll to read the full message if it's long
+                                </div>
+                                <button class="btn-primary" id="copyMarketingMessage" style="margin-top: 20px; width: 100%;">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                                        <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                                    </svg>
+                                    Copy to Clipboard
+                                </button>
+                            </div>
+
+                            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                                <button class="btn-secondary" id="saveToClipboardManager">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z"/>
+                                        <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z"/>
+                                    </svg>
+                                    Save to Clipboard
+                                </button>
+                                <button class="btn-secondary" id="tryDifferentInstructions">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Try Different Instructions
+                                </button>
+                                <button class="btn-secondary" id="backToReportSelection">New Report</button>
+                                <button class="btn-secondary" id="closeLeadReport">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Clipboard Manager Modal -->
+        <div class="modal-overlay" id="clipboardModal">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h2>📋 My Clipboard Manager</h2>
+                    <button class="modal-close" id="clipboardClose">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div style="margin-bottom: 24px;">
+                        <h4 style="margin-bottom: 12px; color: var(--dark);">Add New Message</h4>
+                        <textarea 
+                            id="newClipboardMessage" 
+                            placeholder="Paste or write your message here..."
+                            style="width: 100%; min-height: 120px; padding: 16px; border: 2px solid var(--gray-border); border-radius: 12px; font-size: 15px; font-family: inherit; resize: vertical; margin-bottom: 12px;"
+                        ></textarea>
+                        <button class="btn-primary" id="addToClipboard" style="width: 100%;">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                            </svg>
+                            Add to Clipboard
+                        </button>
+                    </div>
+
+                    <div style="border-top: 2px solid var(--gray-border); padding-top: 24px;">
+                        <h4 style="margin-bottom: 16px; color: var(--dark);">Saved Messages (<span id="clipboardCount">0</span>)</h4>
+                        
+                        <div id="clipboardList" style="display: flex; flex-direction: column; gap: 16px;">
+                            <!-- Messages will be inserted here -->
+                        </div>
+
+                        <div id="noClipboardMessages" style="display: none; text-align: center; padding: 40px;">
+                            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style="margin: 0 auto 16px;">
+                                <circle cx="30" cy="30" r="28" stroke="var(--gray-border)" stroke-width="2"/>
+                                <path d="M30 20v16M30 42v2" stroke="var(--gray)" stroke-width="3" stroke-linecap="round"/>
+                            </svg>
+                            <h4 style="color: var(--gray); margin-bottom: 8px;">No Saved Messages</h4>
+                            <p style="color: var(--gray); font-size: 14px;">Add messages above to save them for quick access</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Analyze Messages Modal -->
+    <div class="modal-overlay" id="analyzeMessagesModal">
+        <div class="modal-container" style="max-width: 1000px;">
+            <div class="modal-header" style="margin: -24px -24px 24px -24px; padding: 24px; border-radius: 16px 16px 0 0;">
+                <h2 style="margin: 0;">💬 Analyze Messages - AI Chat Analysis</h2>
+                <button class="modal-close" id="analyzeMessagesClose">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Step 1: Upload Messages -->
+                <div class="analyze-step active" id="analyzeStep1">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <h3 style="font-size: 24px; color: var(--dark); margin-bottom: 12px;">📥 Upload Your Messages</h3>
+                        <p style="color: var(--gray); font-size: 15px;">Choose how you want to provide the messages for analysis</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 32px;">
+                        <!-- Option 1: Upload Photos -->
+                        <div class="message-upload-card" style="border-radius: 16px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="document.getElementById('photoUpload').click()">
+                            <div class="option-icon" style="width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <h4 style="margin: 0 0 8px 0; color: var(--dark);">Upload Photos</h4>
+                            <p style="margin: 0; font-size: 13px; color: var(--gray);">Upload screenshots of messages</p>
+                            <input type="file" id="photoUpload" accept="image/*" multiple style="display: none;" onchange="handlePhotoUpload(event)">
+                        </div>
+
+                        <!-- Option 2: Text Input -->
+                        <div class="message-upload-card" style="border-radius: 16px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="showTextInput()">
+                            <div class="option-icon" style="width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </div>
+                            <h4 style="margin: 0 0 8px 0; color: var(--dark);">Type Messages</h4>
+                            <p style="margin: 0; font-size: 13px; color: var(--gray);">Paste or type messages directly</p>
+                        </div>
+
+                        <!-- Option 3: File Upload -->
+                        <div class="message-upload-card" style="border-radius: 16px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="document.getElementById('fileUpload').click()">
+                            <div class="option-icon" style="width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <h4 style="margin: 0 0 8px 0; color: var(--dark);">Upload File</h4>
+                            <p style="margin: 0; font-size: 13px; color: var(--gray);">Upload chat export file (TXT, JSON)</p>
+                            <input type="file" id="fileUpload" accept=".txt,.json,.csv" style="display: none;" onchange="handleFileUpload(event)">
+                        </div>
+                    </div>
+
+                    <!-- Text Input Area (Hidden by default) -->
+                    <div id="textInputArea" style="display: none; margin-bottom: 24px;">
+                        <label style="display: block; margin-bottom: 12px; font-weight: 600; color: var(--dark);">
+                            📝 Enter or Paste Messages:
+                        </label>
+                        <textarea 
+                            id="messagesTextInput" 
+                            placeholder="Paste your messages here... You can copy from WhatsApp, Telegram, or any chat platform."
+                            style="width: 100%; min-height: 250px; padding: 16px; border: 3px solid var(--primary); border-radius: 12px; font-size: 15px; font-family: 'Consolas', monospace; resize: vertical; line-height: 1.6;"
+                        ></textarea>
+                        <div style="margin-top: 8px; font-size: 13px; color: var(--gray);">
+                            💡 Supports WhatsApp format, Telegram, Discord, or plain text conversations
+                        </div>
+                    </div>
+
+                    <!-- Uploaded Files Display -->
+                    <div id="uploadedFilesDisplay" style="display: none; margin-bottom: 24px;">
+                        <h4 style="margin-bottom: 12px; color: var(--dark);">📁 Uploaded Files:</h4>
+                        <div id="filesList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                    </div>
+
+                    <!-- Photo Preview Section -->
+                    <div id="photoPreviewSection" style="display: none; margin-bottom: 24px;">
+                        <h4 style="margin-bottom: 12px; color: var(--dark);">📸 Photo Preview:</h4>
+                        <div id="photoPreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;"></div>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button class="btn-primary" id="nextToInstructionsFromUpload" onclick="goToAnalyzeStep(2)" style="min-width: 200px;">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Next - AI Instructions
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: AI Behavior Configuration -->
+                <div class="analyze-step" id="analyzeStep2">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <h3 style="font-size: 24px; color: var(--dark); margin-bottom: 12px;">🤖 Configure AI Analysis Behavior</h3>
+                        <p style="color: var(--gray); font-size: 15px;">Define how the AI should behave and respond</p>
+                    </div>
+
+                    <!-- Unified Behavior Section -->
+                    <div style="border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                        <h4 style="margin: 0 0 16px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            Behavior Instructions
+                        </h4>
+                        <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--gray); line-height: 1.6;">
+                            Define EVERYTHING here - the AI's personality, analysis style, response format, and output instructions. This is your complete control panel. No pre-existing rules, just your instructions.
+                        </p>
+                        <div style="padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+                            <p style="margin: 0; font-size: 13px; color: var(--dark); line-height: 1.6;">
+                                <strong>📸 Photos:</strong> Automatic preset behavior for image analysis. Your instructions will be used as additional guidance.<br>
+                                <strong>📝 Text/Files:</strong> Your instructions are the ONLY instructions - complete control.
+                            </p>
+                        </div>
+
+                        <textarea 
+                            id="behaviorInstructions" 
+                            placeholder="Example: You are a professional psychologist analyzing relationship dynamics. Be empathetic, analytical, and provide deep insights into communication patterns. Focus on emotional intelligence and conflict resolution.
+
+After analyzing the conversation, provide:
+1. A comprehensive summary of the main themes and topics
+2. Sentiment analysis of each participant
+3. Key relationship dynamics and power structures
+4. Potential conflicts or issues identified
+5. Specific recommendations for improvement
+6. Direct quotes that support your analysis
+
+Be thorough, professional, and provide actionable insights. Write in Hebrew."
+                            style="width: 100%; min-height: 300px; padding: 16px; border-radius: 12px; font-size: 14px; font-family: inherit; resize: vertical; margin-bottom: 16px;"
+                        ></textarea>
+
+                        <!-- Behavior Files Upload -->
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button onclick="loadBehaviorPreset()" style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                                Load Saved Preset
+                            </button>
+                            <button onclick="document.getElementById('behaviorJsonUpload').click()" style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Upload Behavior JSON
+                            </button>
+                            <button onclick="document.getElementById('exampleChatUpload').click()" style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                                </svg>
+                                Upload Example Chat
+                            </button>
+                            <button onclick="saveBehaviorPreset()" style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293z"/>
+                                </svg>
+                                Save Behavior for Future
+                            </button>
+                        </div>
+                        <input type="file" id="behaviorJsonUpload" accept=".json" style="display: none;" onchange="handleBehaviorFileUpload(event, 'json')">
+                        <input type="file" id="exampleChatUpload" accept=".txt,.json" style="display: none;" onchange="handleBehaviorFileUpload(event, 'chat')">
+                        
+                        <div id="behaviorFilesDisplay" style="margin-top: 16px; display: none;">
+                            <div style="padding: 12px; border-radius: 8px; font-size: 13px; color: var(--dark);">
+                                <strong>Uploaded behavior files:</strong>
+                                <div id="behaviorFilesList" style="margin-top: 8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button class="btn-secondary" onclick="goToAnalyzeStep(1)">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button class="btn-primary" onclick="startMessageAnalysis()" style="min-width: 200px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                            Start Analysis
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Analysis in Progress -->
+                <div class="analyze-step" id="analyzeStep3">
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div class="loader" style="width: 80px; height: 80px; margin: 0 auto 32px;"></div>
+                        <h3 style="font-size: 28px; color: var(--dark); margin-bottom: 16px;">🧠 Analyzing Messages...</h3>
+                        <p id="analysisProgressText" style="font-size: 16px; color: var(--gray); margin-bottom: 24px;">
+                            Processing with advanced AI thinking...
+                        </p>
+                        <div style="max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 12px;">
+                            <p style="font-size: 14px; color: var(--gray); margin: 0; line-height: 1.8;">
+                                ⏳ This may take a while as we're using an extended context window and deep thinking capabilities to provide comprehensive analysis. The AI is carefully reviewing every aspect of your messages.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Results -->
+                <div class="analyze-step" id="analyzeStep4">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="margin: 0 auto 20px;">
+                            <circle cx="40" cy="40" r="36" fill="url(#analyzeGradient)" opacity="0.2"/>
+                            <path d="M28 40L36 48L52 30" stroke="url(#analyzeGradient)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <defs>
+                                <linearGradient id="analyzeGradient" x1="0" y1="0" x2="80" y2="80">
+                                    <stop offset="0%" stop-color="#8b5cf6"/>
+                                    <stop offset="100%" stop-color="#06b6d4"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <h3 style="font-size: 28px; color: var(--dark); margin-bottom: 12px;">✨ Analysis Complete!</h3>
+                        <p style="font-size: 16px; color: var(--gray);">Your detailed message analysis is ready</p>
+                    </div>
+
+                    <!-- Cost Tracker Display -->
+                    <div id="costTrackerDisplay" style="border-radius: 12px; padding: 16px; margin-bottom: 24px; display: none;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                            <div>
+                                <h4 style="margin: 0 0 8px 0; font-size: 16px;">💰 Cost Tracking</h4>
+                                <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+                                    <div>
+                                        <span style="font-size: 13px; color: var(--gray);">Tokens Used:</span>
+                                        <strong style="display: block; font-size: 18px; color: var(--dark);" id="tokensUsed">0</strong>
+                                    </div>
+                                    <div>
+                                        <span style="font-size: 13px; color: var(--gray);">Estimated Cost:</span>
+                                        <strong style="display: block; font-size: 18px;" id="estimatedCost">$0.00</strong>
+                                    </div>
+                                    <div>
+                                        <span style="font-size: 13px; color: var(--gray);">Total Session Cost:</span>
+                                        <strong style="display: block; font-size: 18px;" id="totalSessionCost">$0.00</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="resetCostTracking()" style="padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                                Reset Session
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="border: 3px solid; border-radius: 16px; padding: 32px; margin-bottom: 24px; max-height: 600px; overflow-y: auto;">
+                        <h4 style="margin: 0 0 20px 0; color: var(--dark); font-size: 20px;">📊 Analysis Report:</h4>
+                        <div id="analysisResult" style="white-space: pre-wrap; line-height: 1.8; color: var(--dark); font-size: 15px;"></div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn-primary" onclick="saveAnalysis()">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293z"/>
+                            </svg>
+                            Save Analysis
+                        </button>
+                        <button class="btn-secondary" onclick="exportAnalysisToPDF()">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd"/>
+                            </svg>
+                            Export PDF
+                        </button>
+                        <button class="btn-secondary" onclick="exportAnalysisToWord()">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9 2a2 2 0 00-2 2v8a2 2 0 002 2h6a2 2 0 002-2V6.414A2 2 0 0016.414 5L14 2.586A2 2 0 0012.586 2H9z"/>
+                                <path d="M3 8a2 2 0 012-2v10h8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+                            </svg>
+                            Export Word
+                        </button>
+                        <button class="btn-secondary" onclick="copyAnalysisResult()">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                            </svg>
+                            Copy
+                        </button>
+                        <button class="btn-secondary" onclick="viewPastAnalyses()">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
+                            </svg>
+                            Past Analyses
+                        </button>
+                        <button class="btn-secondary" onclick="startNewAnalysis()">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                            </svg>
+                            New Analysis
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Consultant AI Chat Modal -->
+    <div class="modal-overlay" id="consultantModal">
+        <div class="modal-container" style="max-width: 1000px;">
+            <div class="modal-header" style="margin: -24px -24px 24px -24px; padding: 24px; border-radius: 16px 16px 0 0;">
+                <h2 style="margin: 0;">🤖 AI Consultant Chat</h2>
+                <button class="modal-close" id="consultantClose">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Step 1: Model Selection -->
+                <div class="consultant-step active" id="consultantStep1">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <h3 style="font-size: 24px; color: var(--dark); margin-bottom: 12px;">🎯 Select AI Model</h3>
+                        <p style="color: var(--gray); font-size: 15px;">Choose the GPT model for your consultation session</p>
+                    </div>
+
+                    <div id="consultantModelGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px;">
+                        <!-- GPT-4o -->
+                        <div class="model-selection-card" data-model="gpt-4o" onclick="selectConsultantModel('gpt-4o')" style="border: 3px solid transparent; border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                <h4 style="margin: 0; color: var(--dark); font-size: 20px;">GPT-4o</h4>
+                                <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">RECOMMENDED</span>
+                            </div>
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray); line-height: 1.6;">
+                                Great overall model for daily tasks.
+                            </p>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">128K context</span>
+                                <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">Vision capable</span>
+                                <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">$5/$15 per 1M tokens</span>
+                            </div>
+                        </div>
+                     <!-- GPT-5 -->
+                     <div class="model-selection-card" data-model="gpt-5" onclick="selectConsultantModel('gpt-5')" style="border: 3px solid transparent; border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                            <h4 style="margin: 0; color: var(--dark); font-size: 20px;">GPT-5</h4>
+                            <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">RECOMMENDED</span>
+                        </div>
+                        <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray); line-height: 1.6;">
+                            Latest and most capable model. Best for complex tasks, vision, and extended context.
+                        </p>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">128K context</span>
+                            <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">Vision capable</span>
+                            <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">$5/$15 per 1M tokens</span>
+                        </div>
+                    </div>
+                        <!-- GPT-4o-mini -->
+                        <div class="model-selection-card" data-model="gpt-4o-mini" onclick="selectConsultantModel('gpt-4o-mini')" style="border: 3px solid transparent; border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                <h4 style="margin: 0; color: var(--dark); font-size: 20px;">GPT-4o-mini</h4>
+                                <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">FAST & CHEAP</span>
+                            </div>
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray); line-height: 1.6;">
+                                Affordable and fast model. Great for simple tasks and quick responses.
+                            </p>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">128K context</span>
+                                <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">Vision capable</span>
+                                <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">$0.15/$0.60 per 1M tokens</span>
+                            </div>
+                        </div>
+
+                        <!-- GPT-3.5-turbo -->
+                        <div class="model-selection-card" data-model="gpt-3.5-turbo" onclick="selectConsultantModel('gpt-3.5-turbo')" style="border: 3px solid transparent; border-radius: 16px; padding: 24px; cursor: pointer; transition: all 0.3s;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                                <h4 style="margin: 0; color: var(--dark); font-size: 20px;">GPT-3.5-turbo</h4>
+                                <span style="padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">BUDGET</span>
+                            </div>
+                            <p style="margin: 0 0 12px 0; font-size: 14px; color: var(--gray); line-height: 1.6;">
+                                Classic model for basic conversations and simple tasks.
+                            </p>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">16K context</span>
+                                <span style="padding: 4px 10px; border-radius: 8px; font-size: 12px;">$0.50/$1.50 per 1M tokens</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="modelSelectionError" style="display: none; padding: 12px; border-radius: 8px; margin-bottom: 16px; text-align: center;">
+                        ⚠️ Please select a model to continue
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button class="btn-primary" onclick="goToConsultantStep(2)" style="min-width: 200px;">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Next - Configure Behavior
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Behavior Configuration -->
+                <div class="consultant-step" id="consultantStep2">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <h3 style="font-size: 24px; color: var(--dark); margin-bottom: 12px;">🎭 Configure AI Behavior</h3>
+                        <p style="color: var(--gray); font-size: 15px;">Define how the AI consultant should behave and respond</p>
+                    </div>
+
+                    <!-- Behavior Configuration Section -->
+                    <div style="border-radius: 16px; padding: 24px; margin-bottom: 24px;">
+                        <h4 style="margin: 0 0 16px 0; font-size: 18px; display: flex; align-items: center; gap: 8px;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            Consultant Behavior & Personality
+                        </h4>
+                        <p style="margin: 0 0 16px 0; font-size: 14px; color: var(--gray); line-height: 1.6;">
+                            Define the AI's personality, expertise, response style, and how it should interact with you. This becomes the consultant's core identity.
+                        </p>
+
+                        <textarea 
+                            id="consultantBehaviorInstructions" 
+                            placeholder="Example: You are a senior business consultant with 20 years of experience in strategy, marketing, and operations. You provide thoughtful, actionable advice with specific examples. Your communication style is professional yet warm, and you always ask clarifying questions before giving recommendations.
+
+Your approach:
+1. Listen carefully and ask follow-up questions
+2. Provide structured, clear advice
+3. Use real-world examples when possible
+4. Be direct but diplomatic
+5. Always focus on actionable next steps
+
+Respond in a mix of Hebrew and English as appropriate for the conversation."
+                            style="width: 100%; min-height: 300px; padding: 16px; border-radius: 12px; font-size: 14px; font-family: inherit; resize: vertical; margin-bottom: 16px;"
+                        ></textarea>
+
+                        <!-- Behavior Management Buttons -->
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <button onclick="loadConsultantPreset()" style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                                </svg>
+                                Load Saved Preset
+                            </button>
+                            <button onclick="document.getElementById('consultantBehaviorJsonUpload').click()" style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Upload Behavior JSON
+                            </button>
+                            <button onclick="saveConsultantPreset()" style="padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+                                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293z"/>
+                                </svg>
+                                Save Preset
+                            </button>
+                        </div>
+                        <input type="file" id="consultantBehaviorJsonUpload" accept=".json" style="display: none;" onchange="handleConsultantBehaviorUpload(event)">
+                        
+                        <div id="consultantBehaviorFilesDisplay" style="margin-top: 16px; display: none;">
+                            <div style="padding: 12px; border-radius: 8px; font-size: 13px; color: var(--dark);">
+                                <strong>Loaded behavior file:</strong>
+                                <div id="consultantBehaviorFileName" style="margin-top: 8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button class="btn-secondary" onclick="goToConsultantStep(1)">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button class="btn-primary" onclick="goToConsultantStep(3)" style="min-width: 200px;">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Next - Instructions
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Instructions & Warning -->
+                <div class="consultant-step" id="consultantStep3">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                        <div class="option-icon" style="width: 80px; height: 80px; margin: 0 auto 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
+                            </svg>
+                        </div>
+                        <h3 style="font-size: 24px; color: var(--dark); margin-bottom: 12px;">⚠️ Important Information</h3>
+                        <p style="color: var(--gray); font-size: 15px;">Please read before starting your consultation</p>
+                    </div>
+
+                    <div style="border-radius: 16px; padding: 32px; margin-bottom: 24px;">
+                        <h4 style="margin: 0 0 16px 0; font-size: 20px;">💰 Cost & Usage Guidelines</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <div style="min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">1</div>
+                                <div>
+                                    <strong style="color: var(--dark); font-size: 16px; display: block; margin-bottom: 4px;">This is an expensive process</strong>
+                                    <p style="margin: 0; color: var(--gray); font-size: 14px; line-height: 1.6;">
+                                        Each message consumes API tokens based on the model you selected. Long conversations can accumulate significant costs.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <div style="min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">2</div>
+                                <div>
+                                    <strong style="color: var(--dark); font-size: 16px; display: block; margin-bottom: 4px;">Maximum 20 messages per session</strong>
+                                    <p style="margin: 0; color: var(--gray); font-size: 14px; line-height: 1.6;">
+                                        To manage costs and maintain focus, each consultation session is limited to 20 messages. Plan your questions wisely.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <div style="min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">✓</div>
+                                <div>
+                                    <strong style="color: var(--dark); font-size: 16px; display: block; margin-bottom: 4px;">Full conversation memory</strong>
+                                    <p style="margin: 0; color: var(--gray); font-size: 14px; line-height: 1.6;">
+                                        The AI will remember everything from your conversation throughout the session. Photos and context are preserved.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; align-items: start; gap: 12px;">
+                                <div style="min-width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">📸</div>
+                                <div>
+                                    <strong style="color: var(--dark); font-size: 16px; display: block; margin-bottom: 4px;">Photo upload support</strong>
+                                    <p style="margin: 0; color: var(--gray); font-size: 14px; line-height: 1.6;">
+                                        You can upload images during the conversation (if using a vision-capable model). Images are analyzed with high detail.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="border-radius: 12px; padding: 20px;">
+                            <strong style="color: var(--dark); font-size: 16px; display: block; margin-bottom: 8px;">💡 Best Practices:</strong>
+                            <ul style="margin: 0; padding-left: 20px; color: var(--gray); font-size: 14px; line-height: 1.8;">
+                                <li>Be clear and specific in your questions</li>
+                                <li>Provide context in your first few messages</li>
+                                <li>Use the consultant for complex problems that need expert guidance</li>
+                                <li>Consider using GPT-4o-mini for simple queries to save costs</li>
+                                <li>Save your consultant behavior presets for future sessions</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button class="btn-secondary" onclick="goToConsultantStep(2)">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Back
+                        </button>
+                        <button class="btn-primary" onclick="startConsultantChat()" style="min-width: 250px; font-size: 16px; padding: 14px 28px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            I Understand - Start Chat
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Chat Interface -->
+                <div class="consultant-step" id="consultantStep4">
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: 12px;">
+                            <div>
+                                <strong style="color: var(--dark);">Model: <span id="consultantSelectedModel">-</span></strong>
+                                <span style="margin: 0 16px; color: var(--gray);">|</span>
+                                <strong style="color: var(--dark);">Messages: <span id="consultantMessageCount">0 / 20</span></strong>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="saveCurrentChat()" style="padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                    <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293z"/>
+                                    </svg>
+                                    Save Chat
+                                </button>
+                                <button onclick="endConsultantChat()" style="padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                                    End Session
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Messages Container -->
+                    <div id="consultantChatMessages" style="border-radius: 16px; padding: 24px; min-height: 400px; max-height: 500px; overflow-y: auto; margin-bottom: 16px;">
+                        <div style="text-align: center; color: var(--gray); padding: 40px 20px;">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" style="margin: 0 auto 16px; opacity: 0.5;">
+                                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                            </svg>
+                            <p style="font-size: 16px; margin: 0;">Start your consultation by sending a message below</p>
+                        </div>
+                    </div>
+
+                    <!-- Message Input Area -->
+                    <div style="border-radius: 12px; padding: 16px;">
+                        <textarea 
+                            id="consultantMessageInput" 
+                            placeholder="Type your message here... Be specific and clear."
+                            style="width: 100%; min-height: 100px; padding: 12px; border-radius: 8px; font-size: 14px; resize: vertical; margin-bottom: 12px;"
+                        ></textarea>
+                        
+                        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                            <button id="consultantSendBtn" onclick="sendConsultantMessage()" class="btn-primary" style="flex: 1; min-width: 150px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                                </svg>
+                                Send Message
+                            </button>
+                            
+                            <button onclick="document.getElementById('consultantPhotoUpload').click()" class="btn-secondary" style="padding: 12px 20px;" id="consultantPhotoBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                Upload Photo
+                            </button>
+                            <input type="file" id="consultantPhotoUpload" accept="image/*" multiple style="display: none;" onchange="handleConsultantPhotoUpload(event)">
+                            
+                            <button onclick="clearConsultantInput()" class="btn-secondary" style="padding: 12px 20px;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                                Clear
+                            </button>
+                        </div>
+
+                        <!-- Uploaded Photos Preview -->
+                        <div id="consultantPhotosPreview" style="display: none; margin-top: 12px; padding: 12px; border-radius: 8px;">
+                            <strong style="font-size: 13px; color: var(--dark); display: block; margin-bottom: 8px;">📸 Photos to send:</strong>
+                            <div id="consultantPhotosGrid" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div id="consultantLoadingIndicator" style="display: none; text-align: center; padding: 20px;">
+                        <div class="loader" style="width: 40px; height: 40px; margin: 0 auto 12px;"></div>
+                        <p style="color: var(--gray); font-size: 14px; margin: 0;">AI is thinking...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Saved Chats Modal -->
+    <div class="modal-overlay" id="savedChatsModal">
+        <div class="modal-container" style="max-width: 1200px;">
+            <div class="modal-header" style="margin: -24px -24px 24px -24px; padding: 24px; border-radius: 16px 16px 0 0;">
+                <h2 style="margin: 0;">💬 Saved Consultant Chats</h2>
+                <button class="modal-close" id="savedChatsClose">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div style="margin-bottom: 24px;">
+                    <p style="color: var(--gray); text-align: center; font-size: 15px;">
+                        View, load, export, or delete your saved consultant conversations
+                    </p>
+                </div>
+
+                <div id="savedChatsList" style="display: grid; gap: 20px;">
+                    <!-- Saved chats will be displayed here -->
+                </div>
+
+                <div id="noSavedChatsMessage" style="display: none; text-align: center; padding: 60px 20px; color: var(--gray);">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor" style="margin: 0 auto 20px; opacity: 0.3;">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/>
+                    </svg>
+                    <h3 style="margin: 0 0 12px 0; color: var(--dark);">No Saved Chats Yet</h3>
+                    <p style="margin: 0; font-size: 15px;">Start a consultant conversation and save it to see it here!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instagram Automation Modal -->
+    <div class="modal-overlay" id="instagramModal">
+        <div class="modal-container" style="max-width: 900px;">
+            <div class="modal-header" style="margin: -24px -24px 24px -24px; padding: 24px; border-radius: 16px 16px 0 0;">
+                <h2 style="margin: 0;">📸 Instagram Automation</h2>
+                <button class="modal-close" id="instagramClose">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M18 6L6 18M6 6l12 12" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Instagram Status & Connection -->
+                <div id="instagramStatusCard" style="border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                        <div>
+                            <strong style="font-size: 15px;">Instagram Status:</strong>
+                            <div id="instagramStatusText" style="margin-top: 4px; font-size: 14px; color: var(--gray);">❌ Not connected</div>
+                        </div>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Connection Section (Hidden by default) -->
+                    <div id="instagramConnectionSection" style="display: none;">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label for="instagramUsernameInput" style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--dark); font-size: 13px;">
+                                Instagram Username:
+                            </label>
+                            <input 
+                                type="text" 
+                                id="instagramUsernameInput" 
+                                class="form-input"
+                                placeholder="your_instagram_username"
+                                style="font-size: 14px;"
+                            />
+                        </div>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label for="instagramPasswordInput" style="display: block; margin-bottom: 6px; font-weight: 600; color: var(--dark); font-size: 13px;">
+                                Instagram Password:
+                            </label>
+                            <input 
+                                type="password" 
+                                id="instagramPasswordInput" 
+                                class="form-input"
+                                placeholder="••••••••"
+                                style="font-size: 14px;"
+                            />
+                        </div>
+                        <div style="padding: 10px; border-radius: 6px; margin-bottom: 12px;">
+                            <p style="margin: 0; font-size: 12px; color: var(--gray); line-height: 1.5;">
+                                🔐 <strong>Secure:</strong> Credentials are used only for connection and never stored.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div style="display: flex; gap: 8px;">
+                        <button id="connectInstagramBtn" class="btn-primary" style="flex: 1; font-size: 13px; padding: 10px;" onclick="toggleInstagramConnection()">
+                            🔗 Connect to Instagram
+                        </button>
+                        <button id="disconnectInstagramBtn" class="btn-secondary" style="display: none; flex: 1; font-size: 13px; padding: 10px;" onclick="disconnectInstagram()">
+                            🔌 Disconnect
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Configuration Section -->
+                <div id="instagramConfigSection">
+                    <h3 style="margin-bottom: 16px; color: var(--dark);">⚙️ Configuration</h3>
+
+                    <!-- Search Type -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="instagramSearchType" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">
+                            Search Type:
+                        </label>
+                        <select id="instagramSearchType" class="form-input" style="cursor: pointer;">
+                            <option value="users">👤 Search Users</option>
+                            <option value="hashtag">#️⃣ Search by Hashtag</option>
+                        </select>
+                    </div>
+
+                    <!-- Search Query -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="instagramSearchQuery" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">
+                            What to search for:
+                        </label>
+                        <input 
+                            type="text" 
+                            id="instagramSearchQuery" 
+                            class="form-input"
+                            placeholder="e.g., 'fitness trainer' or 'travel' (without # for hashtag)"
+                        />
+                        <small style="color: var(--gray); font-size: 13px; display: block; margin-top: 6px;">
+                            💡 For hashtag search, type without the # symbol
+                        </small>
+                    </div>
+
+                    <!-- Max Accounts -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="instagramMaxAccounts" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">
+                            How many accounts to message:
+                        </label>
+                        <input 
+                            type="number" 
+                            id="instagramMaxAccounts" 
+                            class="form-input"
+                            value="10"
+                            min="1"
+                            max="50"
+                        />
+                        <small style="color: var(--gray); font-size: 13px; display: block; margin-top: 6px;">
+                            ⚠️ Recommended: Max 20 per session to avoid Instagram limits
+                        </small>
+                    </div>
+
+                    <!-- Specific Accounts (Optional) -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="instagramSpecificAccounts" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">
+                            Specific accounts (optional):
+                        </label>
+                        <textarea 
+                            id="instagramSpecificAccounts" 
+                            class="form-input"
+                            rows="3"
+                            placeholder="Leave empty to search, or enter usernames separated by commas: user1, user2, user3"
+                        ></textarea>
+                        <small style="color: var(--gray); font-size: 13px; display: block; margin-top: 6px;">
+                            💡 If you enter specific accounts, search will be skipped
+                        </small>
+                    </div>
+
+                    <!-- Message Template -->
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label for="instagramMessage" style="display: block; margin-bottom: 8px; font-weight: 600; color: var(--dark);">
+                            Custom message to send:
+                        </label>
+                        <textarea 
+                            id="instagramMessage" 
+                            class="form-input"
+                            rows="5"
+                            placeholder="Hi! I came across your profile and..."
+                        ></textarea>
+                        <small style="color: var(--gray); font-size: 13px; display: block; margin-top: 6px;">
+                            ⚠️ Keep it professional and friendly to avoid being marked as spam
+                        </small>
+                    </div>
+
+                    <!-- Warning -->
+                    <div style="padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: start; gap: 12px;">
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="currentColor" style="flex-shrink: 0; margin-top: 2px;">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            <div>
+                                <strong style="font-size: 14px;">Important Warnings:</strong>
+                                <ul style="margin: 8px 0 0 0; padding-left: 20px; font-size: 13px; color: var(--gray); line-height: 1.8;">
+                                    <li>Instagram limits: ~200 DMs/day for new accounts, ~500/day for older accounts</li>
+                                    <li>The app waits 8-15 seconds between messages automatically</li>
+                                    <li>Your account may be flagged if you send too many messages</li>
+                                    <li>Don't use this for spam - be respectful!</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn-primary" id="startInstagramAutomation">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                            </svg>
+                            Start Now
+                        </button>
+                        <button class="btn-run-background" onclick="startInstagramAutomation(true)">
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                            </svg>
+                            Run in Background
+                        </button>
+                        <button class="btn-secondary" id="closeInstagramModal">
+                            Close
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress Section (Hidden initially) -->
+                <div id="instagramProgressSection" style="display: none;">
+                    <h3 style="margin-bottom: 16px; color: var(--dark); text-align: center;">🚀 Processing...</h3>
+
+                    <!-- Progress Stats -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                        <div style="border-radius: 12px; padding: 16px; text-align: center;">
+                            <div style="font-size: 13px; color: var(--gray); margin-bottom: 4px;">Progress</div>
+                            <div id="progressCount" style="font-size: 24px; font-weight: 700;">0 / 0</div>
+                        </div>
+                        <div style="border-radius: 12px; padding: 16px; text-align: center;">
+                            <div style="font-size: 13px; color: var(--gray); margin-bottom: 4px;">Sent</div>
+                            <div id="sentCount" style="font-size: 24px; font-weight: 700;">0</div>
+                        </div>
+                        <div style="border-radius: 12px; padding: 16px; text-align: center;">
+                            <div style="font-size: 13px; color: var(--gray); margin-bottom: 4px;">Failed</div>
+                            <div id="failedCount" style="font-size: 24px; font-weight: 700;">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Current Processing -->
+                    <div id="currentProcessing" style="background: var(--gray-light); padding: 16px; border-radius: 12px; margin-bottom: 24px; text-align: center;">
+                        <div style="font-size: 13px; color: var(--gray); margin-bottom: 8px;">Currently processing:</div>
+                        <div id="currentUsername" style="font-size: 18px; font-weight: 600; color: var(--dark);">-</div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-bar" style="margin-bottom: 24px;">
+                        <div class="progress-fill" id="instagramProgressBar"></div>
+                    </div>
+
+                    <!-- Live Logs -->
+                    <div style="border-radius: 12px; padding: 16px; max-height: 400px; overflow-y: auto; font-family: 'Consolas', monospace; margin-bottom: 24px;">
+                        <div style="font-weight: 600; margin-bottom: 12px; font-size: 13px;">📋 Live Logs:</div>
+                        <div id="instagramLogs" style="font-size: 12px; line-height: 1.8;"></div>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button class="btn-secondary" id="closeProgressBtn" onclick="closeInstagramModal()" style="display: none;">
+                            Close
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Section (Hidden initially) -->
+                <div id="instagramResultsSection" style="display: none;">
+                    <h3 style="margin-bottom: 16px; color: var(--dark); text-align: center;">✅ Completed!</h3>
+                    
+                    <div style="border-radius: 12px; padding: 20px; margin-bottom: 24px; text-align: center;">
+                        <div id="finalSummary" style="font-size: 16px; line-height: 2;"></div>
+                    </div>
+
+                    <div id="instagramResultsList" style="max-height: 400px; overflow-y: auto;"></div>
+
+                    <div style="text-align: center; margin-top: 24px;">
+                        <button class="btn-primary" onclick="resetInstagramModal()">
+                            New Automation
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Extractor Modal -->
+    <div id="emailExtractorModal" class="modal-overlay">
+        <div class="modal-content modal-container large-modal" style="border-radius: 24px; max-width: 900px; box-shadow: var(--shadow-xl);">
+            <div class="modal-header" style="border-radius: 24px 24px 0 0;">
+                <h2 id="emailExtractorTitle" style="font-weight: 800; font-size: 28px; margin: 0;">📧 Extract Emails from Websites</h2>
+                <button class="modal-close" id="emailExtractorClose">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Step 1: Select Table -->
+                <div id="emailStep1" class="email-step active">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 20px;">📋 Select a table to extract emails from:</h3>
+                    <div id="emailTablesList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+                        <!-- Tables will be loaded here -->
+                    </div>
+                    <div id="noEmailTablesMessage" style="display: none; text-align: center; padding: 40px; color: var(--gray);">
+                        📦 No saved tables found. Create a scrape first!
+                    </div>
+                </div>
+
+                <!-- Step 2: Processing -->
+                <div id="emailStep2" class="email-step">
+                    <div style="text-align: center; padding: 40px; border-radius: 16px;">
+                        <div class="loader" style="margin: 0 auto 20px;"></div>
+                        <h3 style="color: var(--dark); font-weight: 700; font-size: 24px; margin-bottom: 8px;">🔍 Extracting Emails...</h3>
+                        <p style="color: var(--gray); font-size: 14px; margin-bottom: 24px;">Visiting websites and searching for contact information</p>
+                        <div style="padding: 20px; border-radius: 12px; border: 2px solid var(--gray-border); box-shadow: var(--shadow); max-width: 400px; margin: 0 auto;">
+                            <p id="emailProgressText" style="font-size: 32px; font-weight: 800; margin-bottom: 12px;">
+                                0 / 0
+                            </p>
+                            <div style="background: var(--gray-light); border-radius: 100px; height: 16px; margin-bottom: 12px; overflow: hidden; border: 2px solid var(--gray-border);">
+                                <div id="emailProgressBar" style="height: 100%; width: 0%; transition: width 0.3s;"></div>
+                            </div>
+                            <p id="currentWebsite" style="color: var(--gray); font-size: 13px; font-weight: 500;">
+                                Processing...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Results -->
+                <div id="emailStep3" class="email-step">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--dark); font-weight: 700; font-size: 24px;">📊 Extraction Complete!</h3>
+                        <div id="emailResultsSummary" style="margin-top: 12px; padding: 20px; border-radius: 16px; box-shadow: var(--shadow);">
+                            <!-- Summary will be inserted here -->
+                        </div>
+                    </div>
+
+                    <div style="border-radius: 16px; padding: 24px; box-shadow: var(--shadow); border: 2px solid var(--gray-border); max-height: 400px; overflow-y: auto;">
+                        <h4 style="margin-bottom: 16px; color: var(--dark); font-weight: 700; font-size: 18px;">📧 Extracted Emails:</h4>
+                        <div style="overflow-x: auto;">
+                            <table id="extractedEmailsTable" style="width: 100%; border-collapse: collapse;">
+                                <!-- Results will be inserted here -->
+                            </table>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 20px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="closeEmailExtractor()">Close</button>
+                        <button class="btn btn-primary" onclick="saveEmailsTable()">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 6px;">
+                                <path d="M7 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H9a2 2 0 01-2-2V9z"/>
+                                <path d="M5 3a2 2 0 00-2 2v6a2 2 0 002 2V5h8a2 2 0 00-2-2H5z"/>
+                            </svg>
+                            Save Table
+                        </button>
+                        <button class="btn btn-success" onclick="exportEmailsCSV()">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" style="margin-right: 6px;">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                            </svg>
+                            Export CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .email-step {
+        display: none;
+    }
+    .email-step.active {
+        display: block;
+    }
+    .table-select-card {
+        padding: 24px;
+        background: white;
+        border: 3px solid var(--gray-border);
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+    }
+    .table-select-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(16, 185, 129, 0.2);
+        border-color: #10b981;
+    }
+    .table-select-card:active {
+        transform: translateY(-2px);
+    }
+    .email-sender-step {
+        display: none;
+    }
+    .email-sender-step.active {
+        display: block;
+    }
+    .compare-step {
+        display: none;
+    }
+    .compare-step.active {
+        display: block;
+    }
+    .comparison-option.selected {
+        border-color: #f97316 !important;
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(251, 146, 60, 0.1)) !important;
+    }
+    </style>
+
+    <!-- Email Lead Sender Modal -->
+    <div id="emailLeadSenderModal" class="modal-overlay">
+        <div class="modal-content modal-container large-modal" style="border-radius: 24px; max-width: 900px; box-shadow: var(--shadow-xl);">
+            <div class="modal-header" style="border-radius: 24px 24px 0 0;">
+                <h2 style="font-weight: 800; font-size: 28px; margin: 0;">📧 Lead Sender - Email</h2>
+                <button class="modal-close" id="emailLeadSenderClose">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Step 1: Select Email Table -->
+                <div id="emailSenderStep1" class="email-sender-step active">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 20px;">📋 Select an email table:</h3>
+                    <div id="emailTablesListForSender" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+                        <!-- Email tables will be loaded here -->
+                    </div>
+                    <div id="noEmailTablesForSender" style="display: none; text-align: center; padding: 40px; color: var(--gray);">
+                        📦 No email tables found. Extract emails first!
+                    </div>
+                </div>
+
+                <!-- Step 2: Choose Send Option -->
+                <div id="emailSenderStep2" class="email-sender-step">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 20px;">📨 How would you like to send emails?</h3>
+                    <div id="selectedTableInfo" style="margin-bottom: 24px; padding: 20px; background: var(--gray-light); border-radius: 12px; border: 2px solid var(--gray-border);"></div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div onclick="chooseEmailSendOption('all')" style="padding: 32px; border: 3px solid var(--gray-border); border-radius: 16px; cursor: pointer; transition: all 0.3s; text-align: center;" onmouseover="this.style.borderColor='#f59e0b'; this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='var(--gray-border)'; this.style.transform=''">
+                            <div style="font-size: 48px; margin-bottom: 16px;">📧</div>
+                            <h4 style="font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 8px;">Send to All</h4>
+                            <p style="font-size: 14px; color: var(--gray);">Send the same email to all contacts in the table</p>
+                        </div>
+                        <div onclick="chooseEmailSendOption('specific')" style="padding: 32px; border: 3px solid var(--gray-border); border-radius: 16px; cursor: pointer; transition: all 0.3s; text-align: center;" onmouseover="this.style.borderColor='#f59e0b'; this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='var(--gray-border)'; this.style.transform=''">
+                            <div style="font-size: 48px; margin-bottom: 16px;">🎯</div>
+                            <h4 style="font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 8px;">Send to Specific</h4>
+                            <p style="font-size: 14px; color: var(--gray);">Choose specific contacts to send emails to</p>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 24px;">
+                        <button class="btn btn-secondary" onclick="backToEmailTableSelection()">← Back</button>
+                    </div>
+                </div>
+
+                <!-- Step 3A: Send to All -->
+                <div id="emailSenderStep3All" class="email-sender-step">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 20px;">✍️ Compose Email for All Recipients</h3>
+                    
+                    <div style="background: var(--gray-light); padding: 20px; border-radius: 12px; margin-bottom: 24px;">
+                        <div style="font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 8px;">📊 Recipients:</div>
+                        <div style="font-size: 24px; font-weight: 800;" id="allRecipientsCount">0</div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-weight: 600; color: var(--dark); margin-bottom: 8px;">📧 Subject:</label>
+                        <input type="text" id="emailSubjectAll" placeholder="Enter email subject..." style="width: 100%; padding: 12px; border: 2px solid var(--gray-border); border-radius: 8px; font-size: 14px;">
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; font-weight: 600; color: var(--dark); margin-bottom: 8px;">✍️ Message:</label>
+                        <textarea id="emailMessageAll" rows="8" placeholder="Write your email message here..." style="width: 100%; padding: 12px; border: 2px solid var(--gray-border); border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="backToEmailSendOptions()">← Back</button>
+                        <button class="btn btn-primary" onclick="sendEmailsToAll(false)">
+                            📧 Send to All
+                        </button>
+                        <button class="btn-run-background" onclick="sendEmailsToAll(true)">
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                            </svg>
+                            Run in Background
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3B: Select Specific Recipients -->
+                <div id="emailSenderStep3Specific" class="email-sender-step">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 20px;">🎯 Select Recipients</h3>
+                    
+                    <div style="background: var(--gray-light); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                        <div style="font-size: 14px; font-weight: 600; color: var(--dark);">
+                            Selected: <span id="selectedEmailsCount" style="font-size: 20px; font-weight: 800;">0</span>
+                        </div>
+                    </div>
+
+                    <div id="specificEmailsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 24px; padding: 12px; border: 2px solid var(--gray-border); border-radius: 12px;">
+                        <!-- Email checkboxes will be loaded here -->
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button class="btn btn-secondary" onclick="backToEmailSendOptions()">← Back</button>
+                        <button class="btn btn-primary" onclick="proceedToComposeSpecific()">
+                            Next →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Compose for Specific -->
+                <div id="emailSenderStep4" class="email-sender-step">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 20px;">✍️ Compose Email for Selected Recipients</h3>
+                    
+                    <div style="background: var(--gray-light); padding: 20px; border-radius: 12px; margin-bottom: 24px;">
+                        <div style="font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 8px;">📊 Recipients:</div>
+                        <div style="font-size: 24px; font-weight: 800;" id="specificRecipientsCount">0</div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-weight: 600; color: var(--dark); margin-bottom: 8px;">📧 Subject:</label>
+                        <input type="text" id="emailSubjectSpecific" placeholder="Enter email subject..." style="width: 100%; padding: 12px; border: 2px solid var(--gray-border); border-radius: 8px; font-size: 14px;">
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; font-weight: 600; color: var(--dark); margin-bottom: 8px;">✍️ Message:</label>
+                        <textarea id="emailMessageSpecific" rows="8" placeholder="Write your email message here..." style="width: 100%; padding: 12px; border: 2px solid var(--gray-border); border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="backToSpecificSelection()">← Back</button>
+                        <button class="btn btn-primary" onclick="sendEmailsToSpecific(false)">
+                            📧 Send Emails
+                        </button>
+                        <button class="btn-run-background" onclick="sendEmailsToSpecific(true)">
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/>
+                            </svg>
+                            Run in Background
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Sending Progress -->
+                <div id="emailSenderStep5" class="email-sender-step">
+                    <div style="text-align: center; padding: 40px;">
+                        <div class="loader" style="margin: 0 auto 20px;"></div>
+                        <h3 style="color: var(--dark); font-weight: 700; font-size: 24px; margin-bottom: 8px;">📧 Sending Emails...</h3>
+                        <p style="color: var(--gray); font-size: 14px; margin-bottom: 24px;">Please wait while we send your emails</p>
+                        <div style="padding: 20px; border-radius: 12px; border: 2px solid var(--gray-border); box-shadow: var(--shadow); max-width: 400px; margin: 0 auto;">
+                            <p id="emailSendingProgress" style="font-size: 32px; font-weight: 800; margin-bottom: 12px;">0 / 0</p>
+                            <div style="background: var(--gray-light); border-radius: 100px; height: 16px; margin-bottom: 12px; overflow: hidden; border: 2px solid var(--gray-border);">
+                                <div id="emailSendingProgressBar" style="height: 100%; width: 0%; transition: width 0.3s;"></div>
+                            </div>
+                            <p id="currentEmailRecipient" style="color: var(--gray); font-size: 13px; font-weight: 500;">Processing...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Results -->
+                <div id="emailSenderStep6" class="email-sender-step">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 24px; text-align: center;">✅ Emails Sent!</h3>
+                    <div id="emailSendResults" style="padding: 24px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 24px;">
+                        <!-- Results will be inserted here -->
+                    </div>
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" onclick="closeEmailLeadSender()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compare Tables Modal -->
+    <div id="compareTablesModal" class="modal-overlay">
+        <div class="modal-content modal-container large-modal" style="border-radius: 24px; max-width: 1000px; box-shadow: var(--shadow-xl);">
+            <div class="modal-header" style="border-radius: 24px 24px 0 0;">
+                <h2 style="font-weight: 800; font-size: 28px; margin: 0;">🔄 Compare Tables</h2>
+                <button class="modal-close" id="compareTablesClose">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Step 1: Select Tables -->
+                <div id="compareStep1" class="compare-step active">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 20px;">📋 Select tables to compare (minimum 2):</h3>
+                    <p style="color: var(--gray); margin-bottom: 20px;">Select at least 2 tables from your saved tables to compare them.</p>
+                    
+                    <div id="compareTablesSelection" style="max-height: 400px; overflow-y: auto; padding: 12px; background: var(--gray-light); border: 2px solid var(--gray-border); border-radius: 12px; margin-bottom: 20px;">
+                        <!-- Tables checkboxes will be loaded here -->
+                    </div>
+                    
+                    <div id="noTablesForCompare" style="display: none; text-align: center; padding: 40px; color: var(--gray);">
+                        📦 No saved tables found. Save some tables first!
+                    </div>
+                    
+                    <div style="background: var(--gray-light); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+                        <div style="font-size: 14px; font-weight: 600; color: var(--dark);">
+                            Selected: <span id="selectedTablesCount" style="font-size: 20px; font-weight: 800;">0</span>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button class="btn btn-primary" id="compareNextBtn" onclick="goToCompareStep2()" disabled>
+                            Next →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Choose Comparison Type -->
+                <div id="compareStep2" class="compare-step">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 20px;">🔍 How do you want to compare?</h3>
+                    
+                    <div id="selectedTablesInfo" style="margin-bottom: 24px; padding: 20px; background: var(--gray-light); border-radius: 12px; border: 2px solid var(--gray-border);">
+                        <!-- Info about selected tables will be shown here -->
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 24px;">
+                        <div onclick="selectComparisonType('duplicates')" class="comparison-option" data-type="duplicates" style="padding: 32px; border: 3px solid var(--gray-border); border-radius: 16px; cursor: pointer; transition: all 0.3s; text-align: center;" onmouseover="this.style.borderColor='#f97316'; this.style.transform='translateY(-4px)'" onmouseout="if(!this.classList.contains('selected')) {this.style.borderColor='var(--gray-border)'; this.style.transform=''}">
+                            <div style="font-size: 48px; margin-bottom: 16px;">🔗</div>
+                            <h4 style="font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 8px;">Find Duplicates</h4>
+                            <p style="font-size: 14px; color: var(--gray);">Create a table with businesses/emails that exist in ALL selected tables</p>
+                        </div>
+                        <div onclick="selectComparisonType('unique')" class="comparison-option" data-type="unique" style="padding: 32px; border: 3px solid var(--gray-border); border-radius: 16px; cursor: pointer; transition: all 0.3s; text-align: center;" onmouseover="this.style.borderColor='#f97316'; this.style.transform='translateY(-4px)'" onmouseout="if(!this.classList.contains('selected')) {this.style.borderColor='var(--gray-border)'; this.style.transform=''}">
+                            <div style="font-size: 48px; margin-bottom: 16px;">✨</div>
+                            <h4 style="font-size: 18px; font-weight: 700; color: var(--dark); margin-bottom: 8px;">Remove Duplicates</h4>
+                            <p style="font-size: 14px; color: var(--gray);">Create a table with unique entries only (no duplicates)</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button class="btn btn-secondary" onclick="goToCompareStep1()">← Back</button>
+                        <button class="btn btn-primary" id="compareExecuteBtn" onclick="executeComparison()" disabled>
+                            Compare →
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Results -->
+                <div id="compareStep3" class="compare-step">
+                    <h3 style="margin-bottom: 20px; color: var(--dark); font-weight: 700; font-size: 20px;">📊 Comparison Results</h3>
+                    
+                    <div style="background: var(--gray-light); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 8px;">Total Rows</div>
+                                <div style="font-size: 32px; font-weight: 800;" id="compareResultsTotal">0</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 8px;">Comparison Type</div>
+                                <div style="font-size: 18px; font-weight: 700; color: var(--dark);" id="compareResultsType">-</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; font-weight: 600; color: var(--dark); margin-bottom: 8px;">Tables Compared</div>
+                                <div style="font-size: 32px; font-weight: 800;" id="compareResultsTablesCount">0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="max-height: 400px; overflow: auto; margin-bottom: 24px; border: 2px solid var(--gray-border); border-radius: 12px;">
+                        <table id="compareResultsTable" style="width: 100%; border-collapse: collapse;">
+                            <thead style="position: sticky; top: 0;">
+                                <tr>
+                                    <th style="padding: 12px; text-align: left;">Name</th>
+                                    <th style="padding: 12px; text-align: left;">Website</th>
+                                    <th style="padding: 12px; text-align: left;">Email</th>
+                                    <th style="padding: 12px; text-align: left;">Phone</th>
+                                    <th style="padding: 12px; text-align: left;">Address</th>
+                                </tr>
+                            </thead>
+                            <tbody id="compareResultsTableBody">
+                                <!-- Results will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="startNewComparison()">🔄 New Comparison</button>
+                        <button class="btn btn-primary" onclick="saveComparisonTable()">
+                            💾 Save Table
+                        </button>
+                        <button class="btn btn-outline" onclick="exportComparisonCSV()">
+                            📄 Export CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/authFetch.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/backgroundTasks.js"></script>
+    <script src="js/app/scraper.js"></script>
+    <script src="js/app/leads.js"></script>
+    <script src="js/app/searchReports.js"></script>
+    <script src="js/app/clipboard.js"></script>
+    <script src="js/app/messageAnalysis.js"></script>
+    <script src="js/app/instagram.js"></script>
+    <script src="js/app/emailExtraction.js"></script>
+    <script src="js/app/emailSender.js"></script>
+    <script src="js/app/dashboardConsultant.js"></script>
+    <script src="js/app/tableComparison.js"></script>
+    <script src="js/app/routines.js"></script>
+    <script src="js/app/docs.js"></script>
+    <script src="js/app/settings.js"></script>
+    <script src="js/app/sms.js"></script>
+    <script src="js/app/shell.js"></script>
+</body>
+</html>

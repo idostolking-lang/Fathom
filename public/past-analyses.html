@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Past Analyses - Fathom</title>
+    <link rel="stylesheet" href="css/fathom.css">
+    <style>
+        /* Page-specific layout only. All color and theme come from fathom.css */
+        .analyses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 18px;
+        }
+
+        .analysis-card { cursor: pointer; }
+
+        .analysis-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--hairline);
+        }
+
+        .analysis-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-hi);
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .analysis-card-date {
+            font-family: var(--mono);
+            font-size: 11px;
+            color: var(--text-low);
+        }
+
+        .analysis-card-preview {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-mid);
+            margin-bottom: 14px;
+            line-height: 1.6;
+            max-height: 62px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            background: var(--ground);
+            border: 1px solid var(--hairline);
+            padding: 12px;
+            border-radius: var(--r);
+        }
+
+        .analysis-card-details {
+            font-size: 12px;
+            color: var(--text-mid);
+            margin-bottom: 16px;
+            padding: 10px 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--hairline);
+            border-radius: var(--r);
+        }
+
+        .analysis-card-details strong {
+            color: var(--text-low);
+            font-family: var(--mono);
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .analysis-card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .analysis-card-actions .btn {
+            flex: 1;
+        }
+
+        .no-analyses {
+            padding: 72px 40px;
+            text-align: center;
+        }
+
+        .no-analyses h2 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .no-analyses p {
+            font-size: 14px;
+            color: var(--text-mid);
+            margin-bottom: 28px;
+        }
+
+        .no-analyses .empty-mark {
+            width: 84px;
+            height: 84px;
+            margin: 0 auto 22px;
+            color: var(--signal);
+            opacity: 0.85;
+        }
+
+        /* Analysis sections inside the modal */
+        .analysis-section {
+            margin-bottom: 18px;
+            padding: 16px;
+            background: var(--surface-2);
+            border: 1px solid var(--hairline);
+            border-left: 3px solid var(--signal-line);
+            border-radius: var(--r);
+        }
+
+        .analysis-section.result {
+            border-left-color: var(--live);
+        }
+
+        .analysis-section h3 {
+            margin: 0 0 12px 0;
+            color: var(--signal);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+        }
+
+        .analysis-section.result h3 {
+            color: var(--live);
+        }
+
+        .analysis-section-content {
+            white-space: pre-wrap;
+            line-height: 1.7;
+            color: var(--text-hi);
+            font-size: 13.5px;
+            max-height: 340px;
+            overflow-y: auto;
+            padding: 14px;
+            background: var(--ground);
+            border: 1px solid var(--hairline);
+            border-radius: var(--r);
+        }
+
+        .analysis-section-content.mono {
+            font-family: var(--mono);
+            font-size: 12.5px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            padding: 20px 24px;
+            border-top: 1px solid var(--hairline);
+            background: var(--surface-1);
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="head">
+            <div>
+                <div class="crumb">
+                    <span>Fathom</span>
+                    <span class="sep">/</span>
+                    <span>Past Analyses</span>
+                </div>
+                <h1>Past Message Analyses</h1>
+                <p>View, manage, and revisit your previous message analysis sessions.</p>
+            </div>
+            <a href="index.html" class="btn ghost">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z"/>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="analyses-grid" id="analysesGrid"></div>
+
+        <div class="panel no-analyses" id="noAnalyses" style="display: none;">
+            <svg class="empty-mark" viewBox="0 0 100 100" fill="none">
+                <circle cx="50" cy="50" r="45" stroke="currentColor" stroke-width="4"/>
+                <path d="M35 50h30M50 35v30" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+            <h2>No Saved Analyses Yet</h2>
+            <p>Start analyzing messages to build your analysis history.</p>
+            <a href="index.html" class="btn-primary">Go to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Analysis Modal -->
+    <div class="modal-overlay" id="analysisModal">
+        <div class="modal-container large-modal">
+            <div class="modal-header">
+                <h2 id="analysisModalTitle">Analysis Details</h2>
+                <button class="modal-close" onclick="closeAnalysisModal()" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="analysis-section">
+                    <h3>Messages Preview</h3>
+                    <div class="analysis-section-content mono" id="messagesPreview"></div>
+                </div>
+
+                <div class="analysis-section" id="behaviorSection" style="display: none;">
+                    <h3>Behavior Instructions</h3>
+                    <div class="analysis-section-content" id="behaviorContent"></div>
+                </div>
+
+                <div class="analysis-section">
+                    <h3>Response Instructions</h3>
+                    <div class="analysis-section-content" id="responseContent"></div>
+                </div>
+
+                <div class="analysis-section result">
+                    <h3>Analysis Result</h3>
+                    <div class="analysis-section-content" id="analysisContent"></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="copyAnalysis()">
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                        <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                    </svg>
+                    Copy Analysis
+                </button>
+                <button class="btn ghost" onclick="closeAnalysisModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentAnalysisContent = '';
+
+        // Load saved analyses
+        const currentAnalyses = JSON.parse(localStorage.getItem('savedAnalyses') || '[]');
+        const legacyAnalyses = JSON.parse(localStorage.getItem('pastAnalyses') || '[]');
+        const savedAnalyses = currentAnalyses.length > 0 ? currentAnalyses : legacyAnalyses;
+
+        if (savedAnalyses.length === 0) {
+            document.getElementById('noAnalyses').style.display = 'block';
+        } else {
+            displayAnalyses();
+        }
+
+        function displayAnalyses() {
+            const analysesGrid = document.getElementById('analysesGrid');
+            analysesGrid.innerHTML = '';
+
+            // Sort by date (newest first)
+            savedAnalyses.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            savedAnalyses.forEach(analysis => {
+                const card = document.createElement('div');
+                card.className = 'table-card analysis-card';
+
+                const date = new Date(analysis.date);
+                const formattedDate = date.toLocaleString();
+
+                const preview = analysis.messagesPreview || 'No preview available';
+                const hasBehavior = analysis.behaviorInstructions && analysis.behaviorInstructions.trim();
+                const analysisName = analysis.name || 'Untitled Analysis';
+                const responseInstructions = analysis.responseInstructions || 'No response instructions saved';
+
+                card.innerHTML = `
+                    <div class="analysis-card-header">
+                        <div>
+                            <div class="analysis-card-title">${analysisName}</div>
+                            <div class="analysis-card-date">${formattedDate}</div>
+                        </div>
+                        <div class="analysis-card-badge">
+                            ${hasBehavior ? 'Custom' : 'Default'}
+                        </div>
+                    </div>
+                    <div class="analysis-card-preview">
+                        ${preview}
+                    </div>
+                    <div class="analysis-card-details">
+                        <strong>Response Instructions</strong> ${responseInstructions.substring(0, 80)}${responseInstructions.length > 80 ? '...' : ''}
+                    </div>
+                    <div class="analysis-card-actions">
+                        <button class="btn" onclick="viewAnalysis(${analysis.id})">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                            </svg>
+                            View
+                        </button>
+                        <button class="btn danger" onclick="deleteAnalysis(${analysis.id}, event)">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                `;
+
+                analysesGrid.appendChild(card);
+            });
+        }
+
+        function viewAnalysis(analysisId) {
+            const analysis = savedAnalyses.find(a => a.id === analysisId);
+            if (!analysis) return;
+
+            // Show modal with analysis details
+            document.getElementById('analysisModalTitle').textContent = analysis.name || 'Untitled Analysis';
+            document.getElementById('messagesPreview').textContent = analysis.messagesPreview || 'No preview available';
+            document.getElementById('responseContent').textContent = analysis.responseInstructions || 'No response instructions saved';
+            document.getElementById('analysisContent').textContent = analysis.analysis || '';
+
+            // Show/hide behavior section
+            const behaviorSection = document.getElementById('behaviorSection');
+            if (analysis.behaviorInstructions && analysis.behaviorInstructions.trim()) {
+                document.getElementById('behaviorContent').textContent = analysis.behaviorInstructions;
+                behaviorSection.style.display = 'block';
+            } else {
+                behaviorSection.style.display = 'none';
+            }
+
+            document.getElementById('analysisModal').classList.add('active');
+            currentAnalysisContent = analysis.analysis || '';
+        }
+
+        function closeAnalysisModal() {
+            document.getElementById('analysisModal').classList.remove('active');
+            currentAnalysisContent = '';
+        }
+
+        function copyAnalysis() {
+            if (!currentAnalysisContent) return;
+
+            navigator.clipboard.writeText(currentAnalysisContent).then(() => {
+                alert('Analysis copied to clipboard.');
+            }).catch(err => {
+                alert('Failed to copy: ' + err);
+            });
+        }
+
+        function deleteAnalysis(analysisId, event) {
+            event.stopPropagation();
+
+            const analysis = savedAnalyses.find(a => a.id === analysisId);
+            if (!analysis) return;
+
+            if (confirm(`Are you sure you want to delete "${analysis.name}"?\n\nThis action cannot be undone.`)) {
+                // Remove from array
+                const index = savedAnalyses.findIndex(a => a.id === analysisId);
+                if (index > -1) {
+                    savedAnalyses.splice(index, 1);
+                    localStorage.setItem('savedAnalyses', JSON.stringify(savedAnalyses));
+
+                    // Refresh display
+                    if (savedAnalyses.length === 0) {
+                        document.getElementById('analysesGrid').innerHTML = '';
+                        document.getElementById('noAnalyses').style.display = 'block';
+                    } else {
+                        displayAnalyses();
+                    }
+                }
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('analysisModal').addEventListener('click', (e) => {
+            if (e.target.id === 'analysisModal') {
+                closeAnalysisModal();
+            }
+        });
+    </script>
+</body>
+</html>

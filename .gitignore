@@ -1,0 +1,45 @@
+node_modules/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Runtime browser/session data
+.wwebjs_auth/
+.wwebjs_cache/
+.cache/
+
+# Logs and local output
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+exports/
+downloads/
+
+# Local database (contains scraped business data — never commit)
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# Local project history and agent planning notes
+docs/archive/
+docs/superpowers/
+
+# Local agent/editor tooling
+.claude/
+.codex-server-*.log
+.codex-server-*.err.log
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Alternate package managers
+yarn.lock
+pnpm-lock.yaml
+

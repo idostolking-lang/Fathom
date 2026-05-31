@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fathom - Saved Tables</title>
+    <link rel="stylesheet" href="css/fathom.css">
+    <style>
+        /* Layout-only helpers, no colors, so the dark theme stays intact */
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 16px;
+        }
+        .table-card { display: flex; flex-direction: column; }
+        .table-card .tc-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+        .table-card .tc-title { font-size: 16px; font-weight: 700; color: var(--text-hi); margin-bottom: 5px; }
+        .table-card .tc-date { font-family: var(--mono); font-size: 11px; color: var(--text-low); }
+        .table-card .tc-url {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-mid);
+            margin-bottom: 16px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .table-card .tc-actions { display: flex; gap: 8px; margin-top: auto; }
+        .table-card .tc-actions .btn { flex: 1; }
+        .empty-state { text-align: center; padding: 64px 24px; }
+        .empty-state .es-icon { color: var(--text-low); margin: 0 auto 22px; display: block; }
+        .empty-state h2 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+        .empty-state p { color: var(--text-mid); margin-bottom: 26px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="head">
+            <div>
+                <div class="crumb">
+                    <span>Fathom</span>
+                    <span class="sep">/</span>
+                    <span>Saved Tables</span>
+                </div>
+                <h1>Saved Tables</h1>
+                <p>View, load, and manage your saved scraping results.</p>
+            </div>
+            <a href="index.html" class="btn ghost">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z"/>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="tables-grid" id="tablesGrid"></div>
+
+        <div class="panel empty-state" id="noTables" style="display: none;">
+            <svg width="72" height="72" viewBox="0 0 80 80" fill="none" class="es-icon">
+                <circle cx="40" cy="40" r="38" stroke="currentColor" stroke-width="3"/>
+                <path d="M30 40h20M40 30v20" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            </svg>
+            <h2>No Saved Tables Yet</h2>
+            <p>Start scraping and save your results to see them here.</p>
+            <a href="index.html" class="btn-primary">Start Scraping</a>
+        </div>
+    </div>
+
+    <script>
+        // Load saved tables
+        const savedTables = JSON.parse(localStorage.getItem('savedTables') || '[]');
+
+        if (savedTables.length === 0) {
+            document.getElementById('noTables').style.display = 'block';
+        } else {
+            displayTables();
+        }
+
+        function displayTables() {
+            const tablesGrid = document.getElementById('tablesGrid');
+            tablesGrid.innerHTML = '';
+
+            // Sort by date (newest first)
+            savedTables.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            savedTables.forEach(table => {
+                const card = document.createElement('div');
+                card.className = 'table-card';
+
+                const date = new Date(table.date);
+                const formattedDate = date.toLocaleString();
+
+                card.innerHTML = `
+                    <div class="tc-head">
+                        <div>
+                            <div class="tc-title">${table.name}</div>
+                            <div class="tc-date">${formattedDate}</div>
+                        </div>
+                        <span class="status done">${table.count} rows</span>
+                    </div>
+                    <div class="tc-url" title="${table.url}">${table.url}</div>
+                    <div class="tc-actions">
+                        <button class="btn-primary" onclick="viewTable(${table.id})">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/>
+                            </svg>
+                            View
+                        </button>
+                        <button class="btn ghost" onclick="deleteTable(${table.id}, event)">
+                            <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                `;
+
+                tablesGrid.appendChild(card);
+            });
+        }
+
+        function viewTable(tableId) {
+            const table = savedTables.find(t => t.id === tableId);
+            if (!table) return;
+
+            // Store in localStorage for results page
+            localStorage.setItem('scrapedData', JSON.stringify(table.data));
+            localStorage.setItem('scrapedUrl', table.url);
+
+            // Navigate to results page
+            window.location.href = 'results.html';
+        }
+
+        function deleteTable(tableId, event) {
+            event.stopPropagation();
+
+            const table = savedTables.find(t => t.id === tableId);
+            if (!table) return;
+
+            if (confirm(`Are you sure you want to delete "${table.name}"?\n\nThis action cannot be undone.`)) {
+                // Remove from array
+                const index = savedTables.findIndex(t => t.id === tableId);
+                if (index > -1) {
+                    savedTables.splice(index, 1);
+                    localStorage.setItem('savedTables', JSON.stringify(savedTables));
+
+                    // Refresh display
+                    if (savedTables.length === 0) {
+                        document.getElementById('tablesGrid').innerHTML = '';
+                        document.getElementById('noTables').style.display = 'block';
+                    } else {
+                        displayTables();
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

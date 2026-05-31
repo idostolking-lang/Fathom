@@ -1,0 +1,122 @@
+/* ===== BACKGROUND TASKS POPUP (Fathom operator-console theme) ===== */
+/* Uses the design tokens from fathom.css (loaded first). */
+
+.background-tasks-popup {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 380px;
+    max-height: 500px;
+    background: var(--surface-1);
+    border: 1px solid var(--hairline-2);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+    transition: opacity .3s var(--ease), transform .3s var(--ease);
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.background-tasks-popup.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+.background-tasks-popup.minimized { max-height: 56px; }
+.background-tasks-popup.minimized .bg-tasks-body { display: none; }
+
+/* Header */
+.bg-tasks-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--hairline);
+    background: var(--surface-2);
+    border-radius: var(--r-lg) var(--r-lg) 0 0;
+    color: var(--text-hi);
+    box-shadow: inset 0 1px 0 var(--etch);
+}
+.bg-tasks-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 12px; font-family: var(--mono); letter-spacing: 1px; text-transform: uppercase; }
+.bg-tasks-count { background: var(--signal); color: var(--signal-ink); padding: 1px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; font-family: var(--mono); }
+.bg-tasks-controls { display: flex; gap: 6px; }
+.bg-task-btn {
+    background: var(--surface-3); border: 1px solid var(--hairline-2); border-radius: var(--r-sm);
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .16s var(--ease); color: var(--text-mid);
+}
+.bg-task-btn:hover { background: var(--hairline-2); color: var(--text-hi); }
+
+/* Body */
+.bg-tasks-body { flex: 1; overflow-y: auto; padding: 12px; max-height: 420px; }
+.bg-tasks-body::-webkit-scrollbar { width: 8px; }
+.bg-tasks-body::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 20px; }
+.bg-tasks-body::-webkit-scrollbar-thumb:hover { background: var(--hairline-2); }
+
+/* Task list */
+.bg-tasks-list { display: flex; flex-direction: column; gap: 10px; }
+.bg-tasks-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; color: var(--text-low); text-align: center; }
+.bg-tasks-empty p { margin: 12px 0 0; font-size: 13px; font-family: var(--mono); }
+
+/* Task card */
+.bg-task-card { background: var(--ground); border: 1px solid var(--hairline); border-radius: var(--r); padding: 12px; transition: border-color .16s var(--ease); }
+.bg-task-card:hover { border-color: var(--hairline-2); }
+.bg-task-header { display: flex; gap: 10px; margin-bottom: 10px; }
+.bg-task-icon { width: 32px; height: 32px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid var(--hairline-2); }
+.bg-task-icon.status-running { background: var(--signal-soft); color: var(--signal); }
+.bg-task-icon.status-paused { background: var(--surface-3); color: var(--text-mid); }
+.bg-task-icon.status-completed { background: oklch(0.81 0.15 150 / 0.16); color: var(--live); }
+.bg-task-icon.status-error { background: var(--alert-soft); color: var(--alert); }
+.bg-task-info { flex: 1; min-width: 0; }
+.bg-task-title { font-size: 13px; font-weight: 600; color: var(--text-hi); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bg-task-meta { display: flex; gap: 12px; font-size: 10.5px; color: var(--text-low); font-family: var(--mono); }
+.bg-task-type, .bg-task-time { display: flex; align-items: center; gap: 4px; }
+.bg-task-actions { display: flex; gap: 4px; }
+.bg-task-btn-sm {
+    background: var(--surface-2); border: 1px solid var(--hairline); border-radius: var(--r-sm);
+    width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .16s var(--ease); color: var(--text-mid);
+}
+.bg-task-btn-sm:hover { background: var(--surface-3); color: var(--text-hi); }
+
+/* Progress */
+.bg-task-progress { display: flex; align-items: center; gap: 8px; }
+.bg-task-progress-bar { flex: 1; height: 5px; background: var(--surface-3); border-radius: 20px; overflow: hidden; }
+.bg-task-progress-fill { height: 100%; transition: width .3s var(--ease); border-radius: 20px; background: var(--signal); }
+.bg-task-progress-fill.status-running { background: var(--signal); }
+.bg-task-progress-fill.status-paused { background: var(--text-low); }
+.bg-task-progress-fill.status-completed { background: var(--live); }
+.bg-task-progress-fill.status-error { background: var(--alert); }
+.bg-task-progress-text { font-size: 11px; font-weight: 600; color: var(--text-mid); min-width: 36px; text-align: right; font-family: var(--mono); }
+
+/* "Run in background" button inside modals */
+.btn-run-background {
+    background: var(--signal) !important; color: var(--signal-ink) !important; border: none !important;
+    padding: 10px 16px !important; font-size: 13px !important; font-weight: 700 !important;
+    border-radius: var(--r) !important; cursor: pointer !important; transition: background .16s var(--ease) !important;
+    display: inline-flex !important; align-items: center !important; gap: 8px !important; font-family: var(--sans) !important;
+}
+.btn-run-background:hover { background: oklch(0.86 0.14 80) !important; }
+.btn-run-background:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
+
+/* Floating toggle */
+.bg-tasks-toggle {
+    position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px;
+    background: var(--surface-2); border: 1px solid var(--hairline-2); border-radius: 50%;
+    box-shadow: var(--shadow-lg); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: background .16s var(--ease), transform .16s var(--ease); z-index: 9999; color: var(--signal);
+}
+.bg-tasks-toggle:hover { background: var(--surface-3); transform: translateY(-2px); }
+.bg-tasks-toggle.has-tasks { animation: pulse-glow 2.4s var(--ease) infinite; }
+.bg-tasks-toggle-badge {
+    position: absolute; top: -4px; right: -4px; background: var(--signal); color: var(--signal-ink);
+    font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 10px; border: 2px solid var(--ground); font-family: var(--mono);
+}
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: var(--shadow-lg); }
+    50% { box-shadow: var(--shadow-lg), 0 0 0 6px var(--signal-soft); }
+}
+
+@media (max-width: 768px) {
+    .background-tasks-popup { right: 10px; bottom: 10px; width: calc(100vw - 20px); max-width: 380px; }
+    .bg-tasks-toggle { right: 10px; bottom: 10px; }
+}

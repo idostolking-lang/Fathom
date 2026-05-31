@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraping Results - Fathom</title>
+    <link rel="stylesheet" href="css/fathom.css">
+</head>
+<body>
+    <div class="container">
+        <div class="head">
+            <div>
+                <div class="crumb">
+                    <span>Fathom</span>
+                    <span class="sep">/</span>
+                    <span>Scrape Results</span>
+                </div>
+                <h1>Scraping Results</h1>
+            </div>
+            <a href="index.html" class="btn ghost">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z"/>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="stat-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 24px;">
+            <div class="stat-card">
+                <div class="stat-label">Total Rows</div>
+                <div class="stat-value mono" id="totalRows">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Source</div>
+                <div class="stat-value mono" id="sourceUrl" style="font-size: 13px; word-break: break-all;">-</div>
+            </div>
+        </div>
+
+        <div class="panel" id="resultsContainer" style="display: none;">
+            <div class="ph">
+                <h3>Extracted Data</h3>
+                <div class="results-actions" style="margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn-primary" id="saveTableBtn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/>
+                        </svg>
+                        Save Table
+                    </button>
+                    <button class="btn ghost" id="exportCsvBtn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"/>
+                        </svg>
+                        Export CSV
+                    </button>
+                    <button class="btn ghost" id="exportJsonBtn">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"/>
+                        </svg>
+                        Export JSON
+                    </button>
+                </div>
+            </div>
+            <div class="table-wrapper" style="border: none; border-radius: 0;">
+                <table class="results-table" id="resultsTable"></table>
+            </div>
+        </div>
+
+        <div class="panel" id="noResults" style="display: none; padding: 64px; text-align: center;">
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="margin: 0 auto 24px;">
+                <circle cx="40" cy="40" r="38" stroke="var(--hairline-2)" stroke-width="4"/>
+                <path d="M30 40h20M40 30v20" stroke="var(--text-low)" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+            <h2 style="font-size: 24px; margin-bottom: 12px;">No Results Found</h2>
+            <p class="muted" style="margin-bottom: 32px;">There are no scraping results to display. Please start a new scrape from the dashboard.</p>
+            <a href="index.html" class="btn-primary">Go to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        // Load scraped data from localStorage
+        const scrapedData = JSON.parse(localStorage.getItem('scrapedData') || '[]');
+        const scrapedUrl = localStorage.getItem('scrapedUrl') || '';
+
+        if (scrapedData.length > 0) {
+            displayResults();
+        } else {
+            document.getElementById('noResults').style.display = 'block';
+        }
+
+        function displayResults() {
+            const resultsContainer = document.getElementById('resultsContainer');
+            const resultsTable = document.getElementById('resultsTable');
+            const noResults = document.getElementById('noResults');
+
+            // Update meta info
+            document.getElementById('totalRows').textContent = scrapedData.length;
+            document.getElementById('sourceUrl').textContent = scrapedUrl;
+
+            // Show results container
+            resultsContainer.style.display = 'block';
+            noResults.style.display = 'none';
+
+            // Get column headers
+            const headers = Object.keys(scrapedData[0]);
+
+            // Build table
+            let tableHtml = '<thead><tr>';
+            headers.forEach(header => {
+                tableHtml += `<th>${header}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+
+            scrapedData.forEach(row => {
+                tableHtml += '<tr>';
+                headers.forEach(header => {
+                    const value = row[header] || '';
+                    // Check if value is a URL and make it clickable
+                    if (typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://'))) {
+                        tableHtml += `<td><a href="${value}" target="_blank" class="website-link">${value}</a></td>`;
+                    } else {
+                        tableHtml += `<td>${value}</td>`;
+                    }
+                });
+                tableHtml += '</tr>';
+            });
+
+            tableHtml += '</tbody>';
+            resultsTable.innerHTML = tableHtml;
+        }
+
+        // Save table function
+        document.getElementById('saveTableBtn').addEventListener('click', saveTable);
+
+        // Export functions
+        document.getElementById('exportCsvBtn').addEventListener('click', exportToCsv);
+        document.getElementById('exportJsonBtn').addEventListener('click', exportToJson);
+
+        function saveTable() {
+            if (scrapedData.length === 0) return;
+
+            const tableName = prompt('Enter a name for this table:', `Scrape ${new Date().toLocaleDateString()}`);
+            if (!tableName) return;
+
+            // Get existing saved tables
+            const savedTables = JSON.parse(localStorage.getItem('savedTables') || '[]');
+
+            // Create new table entry
+            const newTable = {
+                id: Date.now(),
+                name: tableName,
+                url: scrapedUrl,
+                data: scrapedData,
+                date: new Date().toISOString(),
+                count: scrapedData.length
+            };
+
+            // Add to saved tables
+            savedTables.push(newTable);
+            localStorage.setItem('savedTables', JSON.stringify(savedTables));
+
+            alert(`Table "${tableName}" saved successfully. You can view it in the "Saved Tables" page.`);
+        }
+
+        function exportToCsv() {
+            if (scrapedData.length === 0) return;
+
+            const headers = Object.keys(scrapedData[0]);
+            let csv = headers.join(',') + '\n';
+
+            scrapedData.forEach(row => {
+                const values = headers.map(header => {
+                    const value = row[header] || '';
+                    // Escape quotes and wrap in quotes if contains comma
+                    return value.includes(',') ? `"${value.replace(/"/g, '""')}"` : value;
+                });
+                csv += values.join(',') + '\n';
+            });
+
+            downloadFile(csv, 'scraped-data.csv', 'text/csv');
+        }
+
+        function exportToJson() {
+            if (scrapedData.length === 0) return;
+
+            const json = JSON.stringify(scrapedData, null, 2);
+            downloadFile(json, 'scraped-data.json', 'application/json');
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

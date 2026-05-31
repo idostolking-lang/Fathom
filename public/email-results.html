@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fathom - Extracted Emails</title>
+    <link rel="stylesheet" href="css/fathom.css">
+</head>
+<body>
+    <div class="container">
+        <div class="head">
+            <div>
+                <div class="crumb">
+                    <a href="index.html">Fathom</a>
+                    <span class="sep">/</span>
+                    <span>Email Extraction</span>
+                    <span class="sep">/</span>
+                    <span>Results</span>
+                </div>
+                <h1>Extracted Emails</h1>
+            </div>
+            <a href="index.html" class="btn ghost">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L9.414 11H13a1 1 0 100-2H9.414l1.293-1.293z"/>
+                </svg>
+                Back to Console
+            </a>
+        </div>
+
+        <div class="stats-grid" id="statsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 22px;">
+            <!-- Stats will be populated here -->
+        </div>
+
+        <div class="panel" id="resultsContainer" style="display: none;">
+            <div class="ph">
+                <h3>Extracted Emails</h3>
+                <div style="margin-left: auto; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="btn ghost sm" id="saveTableBtn">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M7.707 10.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V6h5a2 2 0 012 2v7a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2h5v5.586l-1.293-1.293zM9 4a1 1 0 012 0v2H9V4z"/>
+                        </svg>
+                        Save Table
+                    </button>
+                    <button class="btn ghost sm" id="exportCsvBtn">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"/>
+                        </svg>
+                        Export CSV
+                    </button>
+                    <button class="btn signal sm" id="exportJsonBtn">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z"/>
+                        </svg>
+                        Export JSON
+                    </button>
+                </div>
+            </div>
+            <div class="table-wrapper" style="border: none; border-radius: 0;">
+                <table class="email-table">
+                    <thead>
+                        <tr>
+                            <th>Business Name</th>
+                            <th>Website</th>
+                            <th>Email</th>
+                            <th style="text-align: center;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="emailTableBody">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel" id="noResults" style="display: none; padding: 56px; text-align: center;">
+            <svg width="56" height="56" viewBox="0 0 20 20" fill="none" style="margin: 0 auto 20px; opacity: 0.5;">
+                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" fill="currentColor"/>
+                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" fill="currentColor"/>
+            </svg>
+            <h2 style="font-size: 22px; font-weight: 800; margin-bottom: 10px;">No Email Results Found</h2>
+            <p class="muted" style="margin-bottom: 26px;">There are no email extraction results to display. Start a new email extraction from the console.</p>
+            <a href="index.html" class="btn signal">Go to Console</a>
+        </div>
+    </div>
+
+    <script>
+        // Load email results from localStorage
+        const currentEmailResults = JSON.parse(localStorage.getItem('emailResults') || '[]');
+        const legacyEmailResults = JSON.parse(localStorage.getItem('emailExtractionResults') || '[]');
+        const emailResults = currentEmailResults.length > 0 ? currentEmailResults : legacyEmailResults;
+
+        if (emailResults.length > 0) {
+            displayResults();
+        } else {
+            document.getElementById('noResults').style.display = 'block';
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[ch]);
+        }
+
+        function displayResults() {
+            const emailsFound = emailResults.filter(r => r.email && r.email !== '').length;
+            const emailsNotFound = emailResults.length - emailsFound;
+            const successRate = Math.round((emailsFound / emailResults.length) * 100);
+
+            // Display stats
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = `
+                <div class="stat-card success">
+                    <div class="stat-value">${emailsFound}</div>
+                    <div class="stat-label">Emails Found</div>
+                </div>
+                <div class="stat-card error">
+                    <div class="stat-value">${emailsNotFound}</div>
+                    <div class="stat-label">Not Found</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${emailResults.length}</div>
+                    <div class="stat-label">Total Websites</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${successRate}%</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            `;
+
+            // Display table
+            const tableBody = document.getElementById('emailTableBody');
+            tableBody.innerHTML = '';
+
+            emailResults.forEach(result => {
+                const hasEmail = result.email && result.email !== '';
+                const businessName = result.name || result.businessName || 'Unknown';
+                const website = result.website || '';
+                const email = hasEmail ? result.email : '-';
+
+                const safeWebsite = escapeHtml(website);
+                const websiteLabel = escapeHtml(website.substring(0, 50) + (website.length > 50 ? '...' : ''));
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="business-name">${escapeHtml(businessName)}</td>
+                    <td>
+                        <a href="${safeWebsite}" target="_blank" rel="noopener" class="website-link" title="${safeWebsite}">
+                            ${websiteLabel}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="email-value ${hasEmail ? 'mono' : 'no-email'}">${escapeHtml(email)}</span>
+                    </td>
+                    <td style="text-align: center;">
+                        <span class="status ${hasEmail ? 'done' : 'idle'}">
+                            <span class="dot"></span>${hasEmail ? 'Found' : 'Not Found'}
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('noResults').style.display = 'none';
+        }
+
+        // Save table function
+        document.getElementById('saveTableBtn')?.addEventListener('click', saveTable);
+        document.getElementById('exportCsvBtn')?.addEventListener('click', exportToCsv);
+        document.getElementById('exportJsonBtn')?.addEventListener('click', exportToJson);
+
+        function saveTable() {
+            if (emailResults.length === 0) return;
+
+            const tableName = prompt('Enter a name for this email results table:', `Emails - ${new Date().toLocaleDateString()}`);
+            if (!tableName) return;
+
+            // Get existing saved tables
+            const savedTables = JSON.parse(localStorage.getItem('savedTables') || '[]');
+
+            // Create new table entry with email results
+            const newTable = {
+                id: Date.now(),
+                name: tableName,
+                url: 'Email Extraction',
+                data: emailResults.map(r => ({
+                    Name: r.name || r.businessName || 'Unknown',
+                    Website: r.website || '',
+                    Email: r.email || '',
+                    Status: (r.email && r.email !== '') ? 'Found' : 'Not Found'
+                })),
+                date: new Date().toISOString(),
+                count: emailResults.length,
+                type: 'email-extraction'
+            };
+
+            // Add to saved tables
+            savedTables.push(newTable);
+            localStorage.setItem('savedTables', JSON.stringify(savedTables));
+
+            alert(`Table "${tableName}" saved successfully. You can view it on the Saved Tables page.`);
+        }
+
+        function exportToCsv() {
+            if (emailResults.length === 0) return;
+
+            let csv = 'Business Name,Website,Email,Status\n';
+
+            emailResults.forEach(result => {
+                const businessName = (result.name || result.businessName || 'Unknown').replace(/,/g, ';');
+                const website = (result.website || '').replace(/,/g, ';');
+                const email = (result.email || '').replace(/,/g, ';');
+                const status = (result.email && result.email !== '') ? 'Found' : 'Not Found';
+
+                csv += `"${businessName}","${website}","${email}","${status}"\n`;
+            });
+
+            downloadFile(csv, 'email-extraction-results.csv', 'text/csv');
+        }
+
+        function exportToJson() {
+            if (emailResults.length === 0) return;
+
+            const exportData = emailResults.map(r => ({
+                businessName: r.name || r.businessName || 'Unknown',
+                website: r.website || '',
+                email: r.email || '',
+                status: (r.email && r.email !== '') ? 'Found' : 'Not Found'
+            }));
+
+            const json = JSON.stringify(exportData, null, 2);
+            downloadFile(json, 'email-extraction-results.json', 'application/json');
+        }
+
+        function downloadFile(content, filename, contentType) {
+            const blob = new Blob([content], { type: contentType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
