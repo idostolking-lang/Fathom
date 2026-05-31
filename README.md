@@ -6,6 +6,8 @@
 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org) [![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)](https://expressjs.com) [![SQLite](https://img.shields.io/badge/SQLite-better--sqlite3-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org) [![Puppeteer](https://img.shields.io/badge/Puppeteer-Chromium-40B5A4?logo=puppeteer&logoColor=white)](https://pptr.dev) [![Playwright](https://img.shields.io/badge/Playwright-extraction-2EAD33?logo=playwright&logoColor=white)](https://playwright.dev) [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-412991?logo=openai&logoColor=white)](https://platform.openai.com) [![WhatsApp](https://img.shields.io/badge/WhatsApp-Web.js-25D366?logo=whatsapp&logoColor=white)](https://wwebjs.dev) [![SMS](https://img.shields.io/badge/SMS-gateway-FF6B35)](#sms-gateway) [![License](https://img.shields.io/badge/License-ISC-3DA639)](LICENSE)
 
+<img src="docs/screenshots/console.png" alt="The Fathom operator console" width="920">
+
 </div>
 
 ---
@@ -17,6 +19,23 @@ Fathom is a single-user research console you run on your own machine. It turns a
 The goal is research and qualification, not mass blasting. The valuable work in lead generation is deciding who is worth contacting and what to say. Fathom moves the tedious parts (collecting listings, cleaning tables, finding emails, reading websites, drafting first messages, tracking long jobs) into one place so you can spend your attention on judgment instead of busywork.
 
 Everything stays on your computer. Data lives in a local SQLite file, integrations authenticate through your own accounts and API keys, and the server is built to run on localhost or a private network such as Tailscale.
+
+## A look inside
+
+**The lead grid.** Every Discover run fills a structured table, name, phone, address, website, and email, ready to filter, enrich, and work.
+
+<p align="center"><img src="docs/screenshots/leads.png" alt="An enriched lead table" width="900"></p>
+
+**Routines.** Compose the pipeline once (Discover, Filter, Enrich, Analyze, Send), then run it on demand or on a cron schedule. A plain-English summary spells out exactly what each routine will do before it runs.
+
+<p align="center"><img src="docs/screenshots/routines.png" alt="The Routines pipeline builder" width="560"></p>
+
+**Set up in place.** The model lineup, outreach channels, and credentials live in Settings and save to your local database. A full operating guide ships inside the console.
+
+<p align="center">
+  <img src="docs/screenshots/settings.png" alt="Settings" width="49%">
+  <img src="docs/screenshots/docs.png" alt="The in-app operating guide" width="49%">
+</p>
 
 ## Features
 
