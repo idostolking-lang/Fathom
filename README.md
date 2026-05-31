@@ -37,6 +37,35 @@ Everything stays on your computer. Data lives in a local SQLite file, integratio
   <img src="docs/screenshots/docs.png" alt="The in-app operating guide" width="49%">
 </p>
 
+## The home screen
+
+Every tool lives on the home screen, grouped into four shelves (visible in the hero above). What each button does:
+
+**🔍 Data Collection**
+- **Start Data Scrape**: pull businesses (name, phone, address, website) from a Google Maps search.
+- **Extract Emails**: visit those websites and collect contact email addresses.
+
+**💾 My Data**
+- **Saved Tables**: browse and manage every saved business table.
+- **Saved Reports**: reopen the AI website-analysis reports you have saved.
+- **Saved Chats**: revisit saved consultant conversations.
+- **View Past Chats**: review the message and WhatsApp transcripts you have analyzed.
+- **My Clipboard**: a quick store for notes and copied snippets.
+- **Compare Tables**: diff two tables to find duplicate or unique rows.
+
+**🎯 Lead Generation**
+- **Specific Search**: score business websites against your own criteria with AI.
+- **Lead Based on Report**: turn an analysis report into personalized outreach copy.
+
+**💬 Communication Tools**
+- **Lead Sender (WhatsApp)**: bulk-message a table of leads on WhatsApp, with AI-drafted content.
+- **Lead Sender (Email)**: send an email campaign to a table of leads.
+- **Analyze Messages**: get AI summaries, insights, and suggestions from a chat transcript.
+- **Consultant**: chat with a custom-configured AI consultant.
+- **SMS Sender**: text a saved table through your SMS gateway, with placeholders and throttling.
+- **WhatsApp Remote**: set the phone number that can run routines by text, and toggle run notifications.
+- **Instagram Automation**: search Instagram by hashtag or username and send automated DMs.
+
 ## Features
 
 - **Routines, a visual pipeline engine.** Compose a research workflow once, then run it on demand or on a schedule. Each step hands its working set of business rows to the next: `Discover -> Filter -> Enrich -> Analyze -> Send -> Save`. Build it, save it, let it run.
