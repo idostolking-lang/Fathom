@@ -348,5 +348,7 @@
     openWhatsapp();
   };
   // preset change (delegated separately since select change isn't a click)
-  document.addEventListener('change', (e) => { if (e.target && e.target.id === 'gwPreset') applyPreset(e.target.value); });
+  if (typeof document.addEventListener === 'function') {
+    document.addEventListener('change', (e) => { if (e.target && e.target.id === 'gwPreset') applyPreset(e.target.value); });
+  }
 })();

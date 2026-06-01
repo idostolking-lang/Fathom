@@ -40,7 +40,7 @@
   (function buildTzPicker() {
     const timeEl = document.getElementById('currentTime');
     if (!timeEl) return;
-    const readout = timeEl.closest('.readout');
+    const readout = typeof timeEl.closest === 'function' ? timeEl.closest('.readout') : null;
     if (!readout) return;
     readout.style.cursor = 'pointer';
     readout.title = 'Click to change timezone';
