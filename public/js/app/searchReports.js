@@ -86,7 +86,7 @@ async function loadSearchTables() {
         if (response.ok) {
             const result = await response.json();
             if (result && result.success && Array.isArray(result.tables)) {
-                savedTables = result.tables;
+                savedTables = window.FATHOM.mergeSavedTables(result.tables);
             }
         }
     } catch (error) {

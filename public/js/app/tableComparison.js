@@ -22,11 +22,8 @@ async function getSavedTablesList() {
         if (!result || !result.success || !Array.isArray(result.tables)) {
             throw new Error('Invalid /api/tables response');
         }
-        // Write-through mirror so checkbox IDs and other pages match the API.
-        try {
-            localStorage.setItem('savedTables', JSON.stringify(result.tables));
-        } catch (_storageError) { /* ignore quota/serialization issues */ }
-        return result.tables;
+        // Merge with localStorage so a table saved only on this device is never dropped.
+        return window.FATHOM.mergeSavedTables(result.tables);
     } catch (_error) {
         // Resilient fallback: never break if the API is unavailable.
         return JSON.parse(localStorage.getItem('savedTables') || '[]');

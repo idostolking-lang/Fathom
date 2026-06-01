@@ -67,12 +67,11 @@ function loadEmailTablesForSender() {
     const savedTables = JSON.parse(localStorage.getItem('savedTables') || '[]');
     renderEmailTablesForSender(savedTables);
 
-    // Background hydration: prefer the API; on any failure keep the localStorage render.
+    // Background hydration: union the API with localStorage so a table saved only
+    // on this device is never hidden, then re-render with the merged set.
     fetchSavedTablesFromApi()
         .then(apiTables => {
-            if (Array.isArray(apiTables) && apiTables.length > 0) {
-                renderEmailTablesForSender(apiTables);
-            }
+            renderEmailTablesForSender(window.FATHOM.mergeSavedTables(apiTables || []));
         })
         .catch(() => { /* keep localStorage render */ });
 }

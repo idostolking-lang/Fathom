@@ -382,9 +382,9 @@
     try {
       const r = await fetch('/api/tables');
       const j = await r.json();
-      state.tables = (j && j.tables) || [];
+      state.tables = window.FATHOM.mergeSavedTables((j && j.tables) || []);
     } catch (_e) {
-      state.tables = [];
+      state.tables = window.FATHOM.mergeSavedTables([]);
     }
 
     list.innerHTML = '';

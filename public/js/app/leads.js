@@ -71,7 +71,7 @@ async function loadTablesForLeads() {
     // The list endpoint omits `data`; the full row (with `data`) is lazy-loaded
     // in processTableForLeads when a card is clicked.
     const apiTables = await apiGetTables();
-    const savedTables = apiTables || JSON.parse(localStorage.getItem('savedTables') || '[]');
+    const savedTables = window.FATHOM.mergeSavedTables(apiTables || []);
     const tablesList = document.getElementById('leadTablesList');
     const noTablesMsg = document.getElementById('noTablesMessage');
 

@@ -38,10 +38,8 @@ async function fetchSavedTables() {
             return { ...summary, data: Array.isArray(summary.data) ? summary.data : [] };
         }));
 
-        // Mirror into localStorage so offline/fallback reads stay current.
-        try { localStorage.setItem('savedTables', JSON.stringify(tables)); } catch (_e) {}
-
-        return tables;
+        // Merge with localStorage so a table saved only on this device is never dropped.
+        return window.FATHOM.mergeSavedTables(tables);
     } catch (_error) {
         return JSON.parse(localStorage.getItem('savedTables') || '[]');
     }

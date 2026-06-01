@@ -59,6 +59,37 @@ window.FATHOM.templateOptions = function (group) {
     .join('');
 };
 
+// Saved tables live in two stores: the legacy localStorage `savedTables` value
+// (written by the results page) and the SQLite-backed /api/tables. A read must
+// NEVER drop a table that exists in only one store. Merge by a stable signature,
+// keep row data when either side has it, write the union back to localStorage,
+// and return it. Every "select a table" view should read through this.
+window.FATHOM.mergeSavedTables = function (apiTables) {
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem('savedTables') || '[]'); } catch (_e) { local = []; }
+  if (!Array.isArray(local)) local = [];
+  if (!Array.isArray(apiTables)) apiTables = [];
+  const sig = (t) => [t && t.name, t && t.url, (t && t.count != null) ? t.count : (Array.isArray(t && t.data) ? t.data.length : '')].join('|');
+  const order = [];
+  const map = new Map();
+  const upsert = (t) => {
+    if (!t || typeof t !== 'object') return;
+    const key = sig(t);
+    if (!map.has(key)) { map.set(key, Object.assign({}, t)); order.push(key); return; }
+    const cur = map.get(key);
+    if (!Array.isArray(cur.data) && Array.isArray(t.data)) cur.data = t.data;
+    if (cur.id == null && t.id != null) cur.id = t.id;
+    if (!cur.date && t.date) cur.date = t.date;
+    if (cur.count == null && t.count != null) cur.count = t.count;
+    if (!cur.url && t.url) cur.url = t.url;
+  };
+  local.forEach(upsert);     // local first, so a table saved only on this device survives
+  apiTables.forEach(upsert); // then the API fills in fields / adds server-side tables
+  const merged = order.map((k) => map.get(k));
+  try { localStorage.setItem('savedTables', JSON.stringify(merged)); } catch (_e) {}
+  return merged;
+};
+
 // The built-in defaults above are the fallback. Any model lineup configured in
 // the UI (Settings) is stored server-side and applied here on startup.
 window.FATHOM.applyServerSettings = async function () {
